@@ -333,6 +333,12 @@ function more() {
     </section>
 
     <section class="card">
+      <h2>Письмо себе</h2>
+      <p class="note" style="margin:0 0 12px">${f('О том, как вы сейчас: что тревожит, о чём мечтается. Через месяц Эхо вернёт его вам.', 'О том, как ты сейчас: что тревожит, о чём мечтается. Через месяц Эхо вернёт его тебе.')}</p>
+      <button class="btn" data-action="letter">✉️ Написать письмо</button>
+    </section>
+
+    <section class="card">
       <h2>Данные</h2>
       <p class="note" style="margin:0 0 14px">Аудио не хранится: после распознавания голосовое удаляется. Эхо — инструмент саморефлексии, а не медицинская помощь.</p>
       <button class="btn ghost" data-action="delete">Удалить все мои данные</button>
@@ -370,7 +376,7 @@ app.addEventListener('click', (ev) => {
     return;
   }
   const action = ev.target.closest('[data-action]')?.dataset.action;
-  if (action === 'record' || action === 'feedback' || action === 'delete' || action === 'tz') {
+  if (['record', 'feedback', 'delete', 'tz', 'letter'].includes(action)) {
     toChat(action);
   }
 });
