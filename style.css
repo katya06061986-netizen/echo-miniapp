@@ -1,0 +1,255 @@
+/* Сумеречная тема: тёмная, но тёплая и лиловая, а не чёрная; акцент — спокойный фиолетовый */
+:root {
+  --bg: #221E35;
+  --surface: #2D2845;
+  --surface-2: #3A3456;
+  --border: #463F66;
+  --text: #F5F3FC;
+  --text-2: #CBC6E2;
+  --text-3: #9A94B8;
+  --accent: #7C6FF0;
+  --accent-soft: rgba(150, 138, 255, 0.22);
+  --danger: #E5707E;
+  --chip-text: #C9C2FF;
+  --glow: rgba(160, 140, 255, 0.28);
+  --tabs-bg: rgba(34, 30, 53, 0.9);
+  --line: rgba(255, 255, 255, 0.12);
+  --radius: 20px;
+  --radius-sm: 12px;
+  --gap: 16px;
+  --tabs-h: 64px;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+
+/* Светлая тема — когда светлая тема в Telegram (класс ставит app.js) */
+:root.light {
+  color-scheme: light;
+  --bg: #E6DFF7;
+  --surface: #F3EFFB;
+  --surface-2: #E0D8F3;
+  --border: #D3C9EE;
+  --text: #241F3A;
+  --text-2: #554E73;
+  --text-3: #857EA2;
+  --accent-soft: rgba(124, 111, 240, 0.16);
+  --danger: #D2566A;
+  --chip-text: #5B4ED1;
+  --glow: rgba(140, 120, 240, 0.30);
+  --tabs-bg: rgba(238, 232, 250, 0.94);
+  --line: rgba(36, 31, 58, 0.12);
+}
+:root.light .card, :root.light .stat { box-shadow: 0 1px 2px rgba(60, 40, 140, 0.05), 0 6px 20px rgba(60, 40, 140, 0.06); }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+/* Иначе display у .tabs и .row перебивает атрибут hidden */
+[hidden] { display: none !important; }
+
+html, body {
+  background: var(--bg);
+  /* Мягкое сияние сверху — как небо после заката */
+  background-image: radial-gradient(120% 60% at 50% -10%, var(--glow), transparent 70%);
+  background-attachment: fixed;
+  color: var(--text);
+  font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button, select, textarea { font: inherit; color: inherit; }
+button { background: none; border: 0; cursor: pointer; }
+
+main {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 20px 16px calc(var(--tabs-h) + var(--safe-b) + 24px);
+  min-height: 100vh;
+}
+
+/* Загрузка: та же «дышащая» точка, что на экране записи */
+.loading { display: grid; place-items: center; min-height: 70vh; }
+.pulse {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: var(--accent);
+  animation: breathe 2.4s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%, 100% { transform: scale(0.85); opacity: 0.55; box-shadow: 0 0 0 0 var(--accent-soft); }
+  50% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 18px transparent; }
+}
+/* Эмблема Эхо дышит так же, как точка загрузки */
+.emblem { display: block; border-radius: 50%; animation: breathe 2.4s ease-in-out infinite; }
+.emblem svg { display: block; width: 100%; height: 100%; }
+
+/* Вокруг кольца недели расходятся круги — как эхо */
+.ring.pulsing::before, .ring.pulsing::after {
+  content: ""; position: absolute; inset: 0; border-radius: 50%;
+  border: 3px solid var(--accent); opacity: 0; pointer-events: none;
+  animation: ripple 3.2s ease-out infinite;
+}
+.ring.pulsing::after { animation-delay: 1.6s; }
+@keyframes ripple {
+  0% { transform: scale(0.95); opacity: 0.7; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .pulse, .emblem, .ring.pulsing::before, .ring.pulsing::after { animation: none; } }
+
+.view { animation: fade 0.25s ease-out; }
+@media (prefers-reduced-motion: reduce) { .view { animation: none; } }
+@keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.hello { margin: 4px 4px 20px; }
+.hello h1 { font-size: 26px; font-weight: 650; letter-spacing: -0.02em; }
+.hello p { color: var(--text-2); margin-top: 2px; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: var(--gap);
+}
+.card h2 { font-size: 15px; font-weight: 600; color: var(--text-2); margin-bottom: 14px; }
+.card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.card-head h2 { margin: 0; }
+
+/* Главная цифра */
+.hero { display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center; }
+.ring { position: relative; width: 96px; height: 96px; }
+.ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring .track, .ring .value { fill: none; stroke-width: 8; stroke-linecap: round; }
+.ring .track { stroke: var(--surface-2); }
+.ring .value { stroke: var(--accent); transition: stroke-dashoffset 0.8s ease; }
+.ring img.avatar { position: absolute; top: 12px; left: 12px; width: calc(100% - 24px); height: calc(100% - 24px); }
+.week-avatars { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; align-items: end; margin-top: 8px; }
+.wa { display: flex; flex-direction: column; align-items: center; min-width: 0; }
+.wa b { font-size: 13px; font-weight: 600; color: var(--text-2); min-height: 16px; }
+.wa img { width: 100%; max-width: 64px; aspect-ratio: 1; }
+.wa span { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+.wa.today span { color: var(--text); font-weight: 600; }
+.ring-label { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; }
+.ring-label b { font-size: 28px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+.ring-label small { display: block; font-size: 11px; color: var(--text-3); margin-top: 2px; }
+.hero-text p { color: var(--text-2); }
+.hero-text .big { color: var(--text); font-size: 17px; font-weight: 600; margin-bottom: 6px; }
+
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: var(--gap); }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; }
+.stat b { display: block; font-size: 20px; font-weight: 650; }
+.stat span { font-size: 12px; color: var(--text-3); }
+
+/* Переключатель 7 / 30 дней */
+.seg { display: inline-flex; background: var(--surface-2); border-radius: 10px; padding: 3px; }
+.seg button { padding: 5px 12px; border-radius: 8px; font-size: 13px; color: var(--text-2); }
+.seg button.is-active { background: var(--accent); color: #fff; }
+
+/* График */
+.chart { width: 100%; height: 160px; display: block; overflow: visible; }
+.chart .grid { stroke: var(--border); stroke-width: 1; stroke-dasharray: 2 4; }
+.chart .axis { fill: var(--text-3); font-size: 10px; }
+.chart .empty { fill: var(--surface-2); }
+.chart .today { fill: var(--text); font-weight: 600; }
+.chart rect.bar { transition: opacity 0.2s; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 10px; border-radius: 999px;
+  background: var(--surface-2); color: var(--text-2); font-size: 13px;
+}
+.chip.accent { background: var(--accent-soft); color: var(--chip-text); }
+.chip b { color: var(--text); font-weight: 600; }
+
+.cta {
+  display: flex; align-items: center; gap: 14px; width: 100%; text-align: left;
+  background: linear-gradient(135deg, rgba(124, 111, 240, 0.22), rgba(124, 111, 240, 0.06));
+  border: 1px solid rgba(124, 111, 240, 0.35);
+}
+.cta .emblem { width: 44px; height: 44px; flex: none; }
+.cta b { display: block; font-weight: 600; }
+.cta span { color: var(--text-2); font-size: 13px; }
+
+/* Записи */
+.day-label { color: var(--text-3); font-size: 13px; margin: 18px 4px 8px; }
+.day-label:first-child { margin-top: 0; }
+.entry { display: grid; grid-template-columns: auto 1fr; gap: 14px; text-align: left; width: 100%; }
+.entry.card { margin-bottom: 10px; }
+.mood-badge {
+  width: 44px; height: 44px; border-radius: 14px;
+  display: grid; place-items: center;
+  font-weight: 700; font-size: 17px; color: #fff;
+}
+.entry-meta { color: var(--text-3); font-size: 12px; margin-bottom: 6px; }
+.entry-text {
+  color: var(--text-2); margin-top: 8px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.entry.is-open .entry-text { -webkit-line-clamp: unset; color: var(--text); }
+
+/* Рецепт */
+.progress { height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden; margin: 14px 0 10px; }
+.progress div { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.8s ease; }
+.ask { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-top: 1px solid var(--border); }
+.ask:first-child { border-top: 0; padding-top: 0; }
+.ask:last-child { padding-bottom: 0; }
+.ask .icon { width: 40px; height: 40px; border-radius: 12px; background: var(--accent-soft); display: grid; place-items: center; font-size: 19px; flex: none; }
+.ask p { color: var(--text-3); font-size: 13px; margin-top: 2px; }
+.ingredient { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-top: 1px solid var(--border); }
+.ingredient:first-of-type { border-top: 0; padding-top: 0; }
+.ingredient .icon { width: 40px; height: 40px; border-radius: 12px; background: var(--accent-soft); display: grid; place-items: center; font-size: 19px; flex: none; }
+.ingredient b { display: block; text-transform: capitalize; }
+.ingredient span { color: var(--text-3); font-size: 13px; }
+.ingredient .lift { margin-left: auto; color: var(--chip-text); font-weight: 650; }
+.note { color: var(--text-3); font-size: 13px; margin-top: 12px; }
+
+/* Ещё */
+.row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.row + .row { margin-top: 14px; }
+.row p { color: var(--text-3); font-size: 13px; }
+select, textarea {
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 10px 12px; outline: none;
+}
+select:focus, textarea:focus { border-color: var(--accent); }
+textarea { width: 100%; min-height: 110px; resize: vertical; margin-bottom: 12px; }
+
+.switch { position: relative; width: 48px; height: 28px; flex: none; }
+.switch input { position: absolute; opacity: 0; inset: 0; cursor: pointer; z-index: 1; }
+.switch span { position: absolute; inset: 0; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--border); transition: background 0.2s; }
+.switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--text-2); transition: transform 0.2s, background 0.2s; }
+.switch input:checked + span { background: var(--accent); border-color: var(--accent); }
+.switch input:checked + span::after { transform: translateX(20px); background: #fff; }
+.switch input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.btn {
+  display: block; width: 100%; padding: 13px; border-radius: var(--radius-sm);
+  background: var(--accent); color: #fff; font-weight: 600;
+}
+.btn:disabled { opacity: 0.5; }
+.btn.ghost { background: transparent; color: var(--danger); border: 1px solid rgba(229, 112, 126, 0.35); }
+.btn.subtle { background: transparent; color: var(--text-2); border: 1px solid var(--line); margin-top: 12px; }
+.card p + p { margin-top: 10px; }
+
+.empty-state { text-align: center; padding: 36px 12px; color: var(--text-2); }
+.empty-state .emblem { width: 64px; height: 64px; margin: 0 auto 18px; }
+.error { text-align: center; padding: 60px 20px; color: var(--text-2); }
+
+.toast {
+  position: fixed; left: 50%; bottom: calc(var(--tabs-h) + var(--safe-b) + 16px);
+  transform: translateX(-50%); background: var(--surface-2); border: 1px solid var(--border);
+  padding: 10px 16px; border-radius: 999px; font-size: 14px; z-index: 20;
+  animation: fade 0.2s ease-out;
+}
+
+/* Нижние вкладки */
+.tabs {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  height: calc(var(--tabs-h) + var(--safe-b)); padding-bottom: var(--safe-b);
+  background: var(--tabs-bg);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border);
+}
+.tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--text-3); font-size: 11px; }
+.tab svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.tab svg circle { fill: currentColor; stroke: none; }
+.tab.is-active { color: var(--accent); }

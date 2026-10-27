@@ -1,0 +1,422 @@
+'use strict';
+
+/*
+ * Mini app «Эхо» без сервера. Данные приходят в ссылке после «#d=» (base64url от JSON):
+ * эта часть адреса не уходит на хостинг, страница разбирает её прямо в телефоне.
+ * Действия (время напоминания, отзыв, удаление) возвращают в чат ссылкой t.me/бот?start=…
+ */
+
+const tg = window.Telegram?.WebApp;
+const app = document.getElementById('app');
+const tabsEl = document.getElementById('tabs');
+const BOT = new URLSearchParams(location.search).get('b') || '';
+
+let state = null;
+let tab = ['overview', 'entries', 'recipe', 'feedback', 'more'].includes(new URLSearchParams(location.search).get('tab')) ? new URLSearchParams(location.search).get('tab') : 'overview';
+let chartRange = 7;
+
+const WEEKDAYS = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
+const MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+
+// ---------- утилиты ----------
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+}
+
+function fmt(n) {
+  return (Math.round(n * 10) / 10).toString().replace('.', ',');
+}
+
+/** «вы»-вариант или «ты»-вариант — как выбрал человек при знакомстве */
+function f(vy, ty) {
+  return state.addr === 'ty' ? ty : vy;
+}
+
+function decode(hash) {
+  const m = hash.match(/(?:^#|&)d=([A-Za-z0-9_-]+)/);
+  if (!m) return null;
+  const b64 = m[1].replace(/-/g, '+').replace(/_/g, '/');
+  const bytes = Uint8Array.from(atob(b64 + '==='.slice((b64.length + 3) % 4)), (c) => c.charCodeAt(0));
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+
+/** Сегодня по времени человека (ссылка могла обновиться вчера) */
+function todayLocal() {
+  return new Date(Date.now() + state.tz * 60000).toISOString().slice(0, 10);
+}
+
+function addDays(date, n) {
+  return new Date(Date.parse(date) + n * 864e5).toISOString().slice(0, 10);
+}
+
+/** Настроение по дням: [{date, mood}] — с поправкой, если ссылка обновлялась не сегодня */
+function days() {
+  const shift = Math.round((Date.parse(todayLocal()) - Date.parse(state.today)) / 864e5);
+  const list = state.days.map((mood, i) => ({ date: addDays(state.today, i - state.days.length + 1), mood, em: state.de?.[i] ?? null }));
+  for (let i = 0; i < shift; i++) list.push({ date: addDays(state.today, i + 1), mood: null, em: null });
+  return list.slice(-30);
+}
+
+/** Котик или цветок из бакета: avatars/<стиль>/<настроение>-<эмоция>.svg */
+function avatarSrc(mood, em) {
+  const file = mood === null ? 'empty.svg' : `${Math.min(10, Math.max(1, Math.round(mood)))}-${em ?? 'n'}.svg`;
+  return `avatars/${encodeURIComponent(state.st)}/${file}`;
+}
+
+/** Цвет настроения: от приглушённого синего через акцент к светлой лаванде */
+function moodColor(mood) {
+  const stops = [[1, [76, 90, 122]], [5.5, [124, 111, 240]], [10, [183, 169, 255]]];
+  const m = Math.min(10, Math.max(1, mood));
+  const [a, b] = m <= stops[1][0] ? [stops[0], stops[1]] : [stops[1], stops[2]];
+  const t = (m - a[0]) / (b[0] - a[0]);
+  const c = a[1].map((v, i) => Math.round(v + (b[1][i] - v) * t));
+  return `rgb(${c.join(',')})`;
+}
+
+function dayTitle(date) {
+  const today = todayLocal();
+  if (date === today) return 'Сегодня';
+  if (date === addDays(today, -1)) return 'Вчера';
+  const d = new Date(date + 'T00:00:00Z');
+  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}, ${WEEKDAYS[d.getUTCDay()]}`;
+}
+
+function plural(n, one, few, many) {
+  const m10 = n % 10, m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return one;
+  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
+  return many;
+}
+
+function greeting() {
+  const h = new Date(Date.now() + state.tz * 60000).getUTCHours();
+  if (h < 6) return 'Доброй ночи';
+  if (h < 12) return 'Доброе утро';
+  if (h < 18) return 'Добрый день';
+  return 'Добрый вечер';
+}
+
+function haptic(kind = 'light') {
+  tg?.HapticFeedback?.impactOccurred?.(kind);
+}
+
+/** Вернуться в чат с ботом и выполнить действие там */
+function toChat(action) {
+  haptic('medium');
+  const link = `https://t.me/${BOT}?start=${action}`;
+  if (BOT && tg?.openTelegramLink) tg.openTelegramLink(link);
+  else if (BOT) location.href = link;
+  tg?.close?.();
+}
+
+// ---------- экраны ----------
+
+/** Эмблема Эхо — ядро со звуковой волной, как на аватарке бота; «дышит» */
+function emblem() {
+  return `<span class="emblem" aria-hidden="true"><svg viewBox="0 0 264 264">
+    <defs><radialGradient id="emblem-core" cx="40%" cy="35%" r="75%">
+      <stop offset="0%" stop-color="#A79DFF"/><stop offset="55%" stop-color="#7C6FF0"/><stop offset="100%" stop-color="#5A4CD6"/>
+    </radialGradient></defs>
+    <circle cx="132" cy="132" r="132" fill="url(#emblem-core)"/>
+    <g fill="#F4F2FF">
+      <rect x="48" y="108" width="20" height="48" rx="10"/><rect x="84" y="74" width="20" height="116" rx="10"/>
+      <rect x="120" y="38" width="24" height="188" rx="12"/><rect x="160" y="74" width="20" height="116" rx="10"/>
+      <rect x="196" y="108" width="20" height="48" rx="10"/>
+    </g></svg></span>`;
+}
+
+function ring(value) {
+  const r = 42, len = 2 * Math.PI * r;
+  const offset = value === null ? len : len * (1 - (value - 1) / 9);
+  return `
+    <div class="ring pulsing">
+      <svg viewBox="0 0 96 96"><circle class="track" cx="48" cy="48" r="${r}"/>
+        <circle class="value" cx="48" cy="48" r="${r}" stroke-dasharray="${len}" stroke-dashoffset="${offset}"/></svg>
+      ${state.st
+        ? `<img class="avatar" src="${avatarSrc(value ?? 6, value === null ? null : state.we)}" alt="">`
+        : `<div class="ring-label"><div><b>${value === null ? '–' : fmt(value)}</b><small>из 10</small></div></div>`}
+    </div>`;
+}
+
+/** Неделя котиками или цветами — как на картинке /stats */
+function weekAvatars() {
+  const today = todayLocal();
+  return `<div class="week-avatars">${days().slice(-7).map((d) => {
+    const wd = WEEKDAYS[new Date(d.date + 'T00:00:00Z').getUTCDay()];
+    return `<div class="wa${d.date === today ? ' today' : ''}" title="${esc(dayTitle(d.date))}${d.mood === null ? '' : ': ' + fmt(d.mood)}">
+      <b>${d.mood === null ? '' : fmt(d.mood)}</b>
+      <img src="${avatarSrc(d.mood, d.em)}" alt="">
+      <span>${wd}</span>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function chart(range) {
+  if (range === 7 && state.st) return weekAvatars();
+  const list = days().slice(-range);
+  const today = todayLocal();
+  const W = 320, H = 160, top = 10, bottom = 22, plotH = H - top - bottom;
+  const step = W / list.length;
+  const barW = Math.min(28, step * 0.62);
+  const y = (m) => top + plotH * (1 - m / 10);
+
+  let out = '';
+  for (const g of [5, 10]) out += `<line class="grid" x1="0" x2="${W}" y1="${y(g)}" y2="${y(g)}"/>`;
+  list.forEach((d, i) => {
+    const cx = step * i + step / 2;
+    if (d.mood === null) {
+      out += `<circle class="empty" cx="${cx}" cy="${top + plotH - 3}" r="3"/>`;
+    } else {
+      const h = Math.max(6, plotH * (d.mood / 10));
+      out += `<rect class="bar" x="${cx - barW / 2}" y="${top + plotH - h}" width="${barW}" height="${h}" rx="${Math.min(8, barW / 2)}" fill="${moodColor(d.mood)}"><title>${esc(dayTitle(d.date))}: ${fmt(d.mood)}</title></rect>`;
+    }
+    const date = new Date(d.date + 'T00:00:00Z');
+    const isToday = d.date === today;
+    const label = range === 7 ? WEEKDAYS[date.getUTCDay()] : (i % 5 === list.length % 5 || isToday ? date.getUTCDate() : '');
+    if (label !== '') out += `<text class="axis${isToday ? ' today' : ''}" x="${cx}" y="${H - 4}" text-anchor="middle">${label}</text>`;
+  });
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Настроение по дням">${out}</svg>`;
+}
+
+function topEmotions() {
+  const since = addDays(todayLocal(), -29);
+  const counts = new Map();
+  for (const e of state.entries) {
+    if (e.d < since) continue;
+    for (const em of e.e) counts.set(em, (counts.get(em) ?? 0) + 1);
+  }
+  return [...counts].sort((a, b) => b[1] - a[1]).slice(0, 5);
+}
+
+function overview() {
+  const week = state.week;
+  const last = state.entries[0];
+  const filled = days().filter((d) => d.mood !== null).length;
+  const emotions = topEmotions();
+  const heroText = week
+    ? `<p class="big">${esc(week.title)}</p><p>${week.trend ? esc(week.trend[0].toUpperCase() + week.trend.slice(1)) + '.' : 'Ещё пара дней — и станет видно, как идёт неделя.'}</p>${state.st && week.avg !== null ? `<p class="note">В среднем ${fmt(week.avg)} из 10</p>` : ''}`
+    : `<p class="big">Неделя только начинается</p><p>${f('Запишите голосовое о дне — и здесь появится ваше настроение.', 'Запиши голосовое о дне — и здесь появится твоё настроение.')}</p>`;
+
+  return `
+    <header class="hello">
+      <h1>${greeting()}${state.name ? ', ' + esc(state.name) : ''}</h1>
+      <p>${last ? `Последняя запись — ${dayTitle(last.d).toLowerCase()}` : f('Здесь будет ваш дневник настроения', 'Здесь будет твой дневник настроения')}</p>
+    </header>
+
+    <section class="card hero">${ring(week?.avg ?? null)}<div class="hero-text">${heroText}</div></section>
+
+    <div class="stats">
+      <div class="stat"><b>${state.streak > 0 ? state.streak + ' 🔥' : 0}</b><span>${plural(state.streak, 'день', 'дня', 'дней')} подряд</span></div>
+      <div class="stat"><b>${state.total}</b><span>${plural(state.total, 'запись', 'записи', 'записей')}</span></div>
+      <div class="stat"><b>${filled}</b><span>${plural(filled, 'день', 'дня', 'дней')} за месяц</span></div>
+    </div>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>Настроение</h2>
+        <div class="seg" role="tablist">
+          <button data-range="7" class="${chartRange === 7 ? 'is-active' : ''}">7 дней</button>
+          <button data-range="30" class="${chartRange === 30 ? 'is-active' : ''}">30 дней</button>
+        </div>
+      </div>
+      ${chart(chartRange)}
+    </section>
+
+    ${emotions.length ? `
+    <section class="card">
+      <h2>Чаще всего звучит</h2>
+      <div class="chips">${emotions.map(([em]) => `<span class="chip accent">${esc(em)}</span>`).join('')}</div>
+    </section>` : ''}
+
+    ${recordButton()}`;
+}
+
+function recordButton() {
+  return `
+    <button class="card cta" data-action="record">
+      ${emblem()}
+      <span><b>Рассказать о дне</b><span>Вернуться в чат и записать голосовое</span></span>
+    </button>`;
+}
+
+function entries() {
+  if (!state.entries.length) {
+    return `<div class="empty-state view">${emblem()}<p>Пока ни одной записи.<br>${f('Расскажите в чате голосом или текстом, как прошёл день.', 'Расскажи в чате голосом или текстом, как прошёл день.')}</p></div>${recordButton()}`;
+  }
+  let html = `<header class="hello"><h1>Записи</h1><p>${'Короткие отрывки последних записей.'}</p></header>${recordButton()}`;
+  let currentDay = '';
+  for (const e of state.entries) {
+    if (e.d !== currentDay) {
+      currentDay = e.d;
+      html += `<div class="day-label">${esc(dayTitle(e.d))}</div>`;
+    }
+    const meta = [e.t, e.s === 'voice' ? '🎙 голосом' : '✍️ текстом'];
+    const tags = e.e.map((x) => `<span class="chip accent">${esc(x)}</span>`);
+    html += `
+      <button class="card entry" data-entry>
+        <span class="mood-badge" style="background:${moodColor(e.m)}">${e.m}</span>
+        <span>
+          <div class="entry-meta">${meta.join(' · ')}</div>
+          ${tags.length ? `<div class="chips">${tags.join('')}</div>` : ''}
+          <div class="entry-text">${esc(e.x)}</div>
+        </span>
+      </button>`;
+  }
+  return html;
+}
+
+function recipe() {
+  const { left, text } = state.recipe;
+  const head = `<header class="hello"><h1>Рецепт хорошего дня</h1><p>${f('Из ваших собственных светлых дней', 'Из твоих собственных светлых дней')}</p></header>`;
+  if (left > 0) {
+    const need = 7;
+    const have = need - left;
+    return `${head}
+      <section class="card">
+        <h2>Собираем рецепт</h2>
+        <p>Ещё ${left} ${plural(left, 'день', 'дня', 'дней')} с записями — и станет видно, что чаще бывает в светлые дни.</p>
+        <div class="progress"><div style="width:${(have / need) * 100}%"></div></div>
+        <p class="note">${have} из ${need}</p>
+      </section>`;
+  }
+  // Текст рецепта — уже готовый, связными абзацами; первую строку-заголовок не повторяем
+  const paragraphs = text.split('\n\n').map((p) => p.replace(/^🍀[^\n]*\n?/, '').trim()).filter(Boolean);
+  return `${head}<section class="card">${paragraphs.map((p) => `<p>${esc(p)}</p>`).join('')}</section>`;
+}
+
+function feedback() {
+  const asks = [
+    ['✨', 'Что добавить', 'Чего не хватает в дневнике'],
+    ['🧹', 'Что убрать', 'Что мешает или кажется лишним'],
+    ['🛠', 'Что улучшить', 'Где неудобно, непонятно или Эхо ошиблось'],
+  ];
+  return `
+    <header class="hello"><h1>Отзыв</h1><p>${f('Это тестовая версия, и ваше мнение очень помогает', 'Это тестовая версия, и твоё мнение очень помогает')}</p></header>
+    <section class="card">
+      ${asks.map(([icon, title, hint]) => `
+        <div class="ask"><span class="icon">${icon}</span><div><b>${title}</b><p>${hint}</p></div></div>`).join('')}
+    </section>
+    <section class="card">
+      <p>Можно пару слов, можно подробно. Отзыв прочитает команда проекта, в дневник он не попадёт.</p>
+      <button class="btn" data-action="feedback" style="margin-top:14px">✍️ Написать отзыв в чате</button>
+    </section>`;
+}
+
+function more() {
+  const on = state.remind !== null;
+  const mOn = state.morning !== null && state.morning !== undefined;
+  const mHours = Array.from({ length: 24 }, (_, h) => `<option value="${h}" ${h === (state.morning ?? 9) ? 'selected' : ''}>${String(h).padStart(2, '0')}:00</option>`).join('');
+  const hours = Array.from({ length: 24 }, (_, h) => `<option value="${h}" ${h === (state.remind ?? 21) ? 'selected' : ''}>${String(h).padStart(2, '0')}:00</option>`).join('');
+  return `
+    <header class="hello"><h1>Ещё</h1></header>
+
+    <section class="card">
+      <h2>Напоминание</h2>
+      <div class="row">
+        <div><div>Напоминать о записи</div><p>${f('По вашему времени', 'По твоему времени')}</p></div>
+        <label class="switch"><input type="checkbox" id="remind-on" ${on ? 'checked' : ''} aria-label="Напоминания"><span></span></label>
+      </div>
+      <div class="row" ${on ? '' : 'hidden'} id="remind-row">
+        <div>Время</div>
+        <select id="remind-hour">${hours}</select>
+      </div>
+      <div class="row">
+        <div><div>Утро: замечать хорошее</div><p>Маленькое приглашение на день</p></div>
+        <label class="switch"><input type="checkbox" id="morning-on" ${mOn ? 'checked' : ''} aria-label="Утреннее сообщение"><span></span></label>
+      </div>
+      <div class="row" ${mOn ? '' : 'hidden'}>
+        <div>Время</div>
+        <select id="morning-hour">${mHours}</select>
+      </div>
+      <button class="btn subtle" data-action="tz">Часовой пояс</button>
+    </section>
+
+    <section class="card">
+      <h2>Данные</h2>
+      <p class="note" style="margin:0 0 14px">Аудио не хранится: после распознавания голосовое удаляется. Эхо — инструмент саморефлексии, а не медицинская помощь.</p>
+      <button class="btn ghost" data-action="delete">Удалить все мои данные</button>
+    </section>`;
+}
+
+// ---------- отрисовка и события ----------
+
+function render() {
+  const views = { overview, entries, recipe, feedback, more };
+  app.innerHTML = `<div class="view">${views[tab]()}</div>`;
+  for (const b of tabsEl.querySelectorAll('.tab')) b.classList.toggle('is-active', b.dataset.tab === tab);
+}
+
+tabsEl.addEventListener('click', (ev) => {
+  const btn = ev.target.closest('.tab');
+  if (!btn || btn.dataset.tab === tab) return;
+  haptic('light');
+  tab = btn.dataset.tab;
+  render();
+  window.scrollTo(0, 0);
+});
+
+app.addEventListener('click', (ev) => {
+  const range = ev.target.closest('[data-range]');
+  if (range) {
+    chartRange = Number(range.dataset.range);
+    haptic('light');
+    render();
+    return;
+  }
+  const entry = ev.target.closest('[data-entry]');
+  if (entry) {
+    entry.classList.toggle('is-open');
+    return;
+  }
+  const action = ev.target.closest('[data-action]')?.dataset.action;
+  if (action === 'record' || action === 'feedback' || action === 'delete' || action === 'tz') {
+    toChat(action);
+  }
+});
+
+// Время напоминания меняет бот: страница только передаёт выбор в чат
+app.addEventListener('change', (ev) => {
+  if (ev.target.id === 'morning-on' || ev.target.id === 'morning-hour') {
+    const on = document.getElementById('morning-on').checked;
+    toChat(on ? `morning_${document.getElementById('morning-hour').value}` : 'morning_off');
+    return;
+  }
+  if (ev.target.id !== 'remind-on' && ev.target.id !== 'remind-hour') return;
+  const on = document.getElementById('remind-on').checked;
+  toChat(on ? `time_${document.getElementById('remind-hour').value}` : 'time_off');
+});
+
+/** Старые клиенты Telegram бросают исключение на неподдерживаемых методах — не даём им сломать загрузку */
+function safe(...calls) {
+  for (const call of calls) {
+    try { if (tg) call(); } catch { /* не поддерживается */ }
+  }
+}
+
+/** Светлая или тёмная — как тема Telegram у человека (вне Telegram — как в системе; ?theme= для скриншотов) */
+function applyTheme() {
+  const forced = new URLSearchParams(location.search).get('theme');
+  const light = forced ? forced === 'light' : tg?.colorScheme ? tg.colorScheme === 'light' : matchMedia('(prefers-color-scheme: light)').matches;
+  document.documentElement.classList.toggle('light', light);
+  const bg = light ? '#E6DFF7' : '#221E35';
+  safe(() => tg.setHeaderColor(bg), () => tg.setBackgroundColor(bg), () => tg.setBottomBarColor(bg));
+}
+
+function start() {
+  safe(() => tg.ready(), () => tg.expand(), () => tg.onEvent('themeChanged', applyTheme));
+  applyTheme();
+  try {
+    state = decode(location.hash);
+  } catch {
+    state = null;
+  }
+  if (!state) {
+    app.innerHTML = '<div class="error">Откройте Эхо кнопкой «Эхо» в чате с ботом.</div>';
+    return;
+  }
+  tabsEl.hidden = false;
+  render();
+}
+
+start();
