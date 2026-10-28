@@ -110,6 +110,9 @@ function toChat(action) {
   tg?.close?.();
 }
 
+/** Аватары на выбор в «Настройках»: эмблема Эхо — по умолчанию */
+const AVATARS = [['emblem', 'Эхо'], ['flower', 'Цветок'], ['cat', 'Котик'], ['cat_coal', 'Уголёк'], ['cat_ginger', 'Рыжик']];
+
 /** Экстренная кнопка: на главном экране и первой карточкой в «Ещё» */
 const SOS_LABEL = '🤍 Помощь здесь и сейчас';
 
@@ -445,6 +448,15 @@ function settings() {
     </section>
 
     <section class="card">
+      <h2>Аватар</h2>
+      <p class="note" style="margin:0 0 12px">Он показывает настроение дня.</p>
+      <div class="avatar-pick">
+        ${AVATARS.map(([id, label]) => `<button class="avatar-opt${state.st === id ? ' is-active' : ''}" data-style="${id}"><img src="avatars/${id}/8-0.svg" alt=""><span>${label}</span></button>`).join('')}
+        <button class="avatar-opt" disabled><span class="soon">✨</span><span>Своё — скоро</span></button>
+      </div>
+    </section>
+
+    <section class="card">
       <h2>Данные</h2>
       <p class="note" style="margin:0 0 14px">Аудио не хранится: после распознавания голосовое удаляется. Эхо — инструмент саморефлексии, а не медицинская помощь.</p>
       <button class="btn ghost" data-action="delete">Удалить все мои данные</button>
@@ -527,6 +539,13 @@ app.addEventListener('click', (ev) => {
   }
   const action = ev.target.closest('[data-action]')?.dataset.action;
   const practice = ev.target.closest('[data-practice]')?.dataset.practice;
+  const style = ev.target.closest('[data-style]')?.dataset.style;
+  if (style) {
+    if (style === state.st) return;
+    haptic('light');
+    toChat(`style_${style}`);
+    return;
+  }
   if (ev.target.closest('[data-sos]')) {
     haptic('medium');
     location.href = `sos.html?a=${state.addr}`;

@@ -375,3 +375,14 @@ textarea { width: 100%; min-height: 110px; resize: vertical; margin-bottom: 12px
 .chart .bar[data-day] { cursor: pointer; }
 
 .ring-btn { background: none; border: 0; padding: 0; cursor: pointer; border-radius: 50%; }
+
+/* «Настройки»: выбор аватара */
+.avatar-pick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.avatar-opt {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px; border-radius: var(--radius-sm);
+  background: var(--surface-2); color: var(--text); font-size: 13px; border: 2px solid transparent;
+}
+.avatar-opt img { width: 56px; height: 56px; }
+.avatar-opt.is-active { border-color: var(--accent); background: var(--accent-soft); }
+.avatar-opt:disabled { opacity: 0.55; }
+.avatar-opt .soon { font-size: 34px; line-height: 56px; }
