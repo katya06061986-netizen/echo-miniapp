@@ -212,7 +212,8 @@ function overview() {
         </div>
       </div>
       ${state.total ? chart(chartRange) : emptyState()}
-      ${state.total ? `<p class="note" style="margin:8px 0 0">${f('Нажмите на день, чтобы открыть его запись.', 'Нажми на день, чтобы открыть его запись.')}</p>` : ''}
+      ${state.total ? `<p class="note" style="margin:8px 0 0">${f('Нажмите на день, чтобы открыть его запись.', 'Нажми на день, чтобы открыть его запись.')}</p>
+      <button class="btn subtle" data-action="stats" style="margin-top:12px">Эхо недели в чат</button>` : ''}
     </section>
 
     <button class="sos-btn" data-sos>${SOS_LABEL}</button>
@@ -439,6 +440,11 @@ function settings() {
         <div><div>Минутка для себя</div><p>Короткая практика после тревожных или усталых записей</p></div>
         <label class="switch"><input type="checkbox" id="practices-on" ${state.pr !== false ? 'checked' : ''} aria-label="Минутка для себя"><span></span></label>
       </div>
+      ${state.ai === null || state.ai === undefined ? '' : `<div class="row">
+        <div><div>Живые выводы</div><p>Сводка от YandexGPT после подробного разбора</p></div>
+        <label class="switch"><input type="checkbox" id="ai-on" ${state.ai ? 'checked' : ''} aria-label="Живые выводы"><span></span></label>
+      </div>`}
+      <button class="btn subtle" data-action="name">Имя и обращение</button>
       <button class="btn subtle" data-action="tz">Часовой пояс</button>
     </section>
 
@@ -477,7 +483,7 @@ function openDay(date) {
         <div><h2>${esc(dayTitle(date))}</h2>${d.mood === null ? '' : `<p class="note" style="margin:0">Настроение ${fmt(d.mood)} из 10</p>`}</div>
       </div>
       ${d.dd.e.length ? `<div class="chips">${d.dd.e.map((x) => `<span class="chip accent">${esc(x)}</span>`).join('')}</div>` : ''}
-      ${d.dd.q ? `<p class="day-quote">Прозвучало: «${esc(d.dd.q)}»</p>` : ''}
+      ${d.dd.q?.length ? `<div class="day-quote"><span>Прозвучало:</span>${d.dd.q.map((q) => `<p>«${esc(q)}»</p>`).join('')}</div>` : ''}
       <button class="btn" data-fullday="${date}">Вся запись</button>
       <button class="btn subtle" data-closeday>Закрыть</button>
     </div>`;
@@ -561,7 +567,7 @@ app.addEventListener('click', (ev) => {
     location.href = `practice.html?p=${practice}&a=${state.addr}&from=app`;
     return;
   }
-  if (['record', 'feedback', 'delete', 'tz', 'letter', 'theme', 'good'].includes(action)) {
+  if (['record', 'feedback', 'delete', 'tz', 'letter', 'theme', 'good', 'stats', 'name'].includes(action)) {
     toChat(action);
   }
 });
@@ -576,6 +582,11 @@ app.addEventListener('change', (ev) => {
   if (['checkin-on', 'checkin-count', 'checkin-hour'].includes(ev.target.id)) {
     const on = document.getElementById('checkin-on').checked;
     toChat(on ? `checkin_${document.getElementById('checkin-count').value}_${document.getElementById('checkin-hour').value}` : 'checkin_off');
+    return;
+  }
+  if (ev.target.id === 'ai-on') {
+    // Включение — через согласие в чате; выключение — сразу
+    toChat(ev.target.checked ? 'ai' : 'ai_off');
     return;
   }
   if (ev.target.id === 'practices-on') {
