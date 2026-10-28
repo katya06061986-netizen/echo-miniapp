@@ -147,6 +147,7 @@ function renderSoundRow() {
   soundRow.innerHTML = options
     .map(([kind, label]) => `<button class="chip${kind === current ? ' accent' : ''}" data-sound="${kind ?? 'off'}">${label}</button>`)
     .join('');
+  document.getElementById('sound-credit').textContent = current === 'music' ? sound.CREDIT : '';
 }
 
 soundRow.addEventListener('click', (ev) => {

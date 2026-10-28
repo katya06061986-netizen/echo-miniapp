@@ -260,6 +260,7 @@ textarea { width: 100%; min-height: 110px; resize: vertical; margin-bottom: 12px
 .practice { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; gap: 28px; padding-bottom: 20px; }
 .practice #app { width: 100%; }
 .orb.still { animation: none; opacity: 0.55; }
+.credit { font-size: 11px; color: var(--text-2); opacity: 0.7; text-align: center; min-height: 1em; }
 .sound-pick { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
 .sound-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
 .sound-row .chip, .sound-pick .chip { border: 0; padding: 7px 12px; font-size: 14px; }

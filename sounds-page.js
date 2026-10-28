@@ -42,6 +42,7 @@ function render() {
   $('orb').classList.toggle('still', !on);
   const left = Math.ceil((endsAt - Date.now()) / 60000);
   $('left').textContent = on ? `Осталось ${left} мин` : '';
+  $('credit').textContent = kind === 'music' ? sound.CREDIT : '';
 }
 
 function finish() {

@@ -325,7 +325,7 @@ function more() {
 
     <section class="card">
       <h2>🎧 Звуки</h2>
-      <p class="note" style="margin:0 0 12px">Тихий фон, чтобы побыть с собой: дождь, море или лес.</p>
+      <p class="note" style="margin:0 0 12px">Тихий фон, чтобы побыть с собой: дождь, море, лес или музыка.</p>
       <button class="btn" data-sounds>Послушать</button>
     </section>
 
