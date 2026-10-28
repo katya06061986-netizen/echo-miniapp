@@ -238,6 +238,23 @@ const PM_SLOTS = [-28, 205, 100];
 const PM_FAR = [[30, 300, 'start'], [310, 26, 'end'], [310, 300, 'end']];
 let pmSel = 0;
 
+/** Общее для карты: волны от Эхо, орбиты и дышащая эмблема в центре */
+function pmBase() {
+  const [cx, cy] = PM_C;
+  return `
+    <defs>
+      <radialGradient id="pm-sat" cx="38%" cy="32%" r="75%"><stop offset="0%" stop-color="#E4DFFF"/><stop offset="55%" stop-color="#A79DFF"/><stop offset="100%" stop-color="#7C6FF0"/></radialGradient>
+      <filter id="pm-glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="7"/></filter>
+    </defs>
+    <circle class="pm-ripple" cx="${cx}" cy="${cy}" r="128"/>
+    <circle class="pm-ripple" style="animation-delay:-1.33s" cx="${cx}" cy="${cy}" r="128"/>
+    <circle class="pm-ripple" style="animation-delay:-2.66s" cx="${cx}" cy="${cy}" r="128"/>
+    <circle cx="${cx}" cy="${cy}" r="80" fill="none" stroke="#7C6FF0" stroke-opacity=".35" stroke-dasharray="2 6"/>
+    <circle cx="${cx}" cy="${cy}" r="110" fill="none" stroke="#7C6FF0" stroke-opacity=".22" stroke-dasharray="2 7"/>
+    <circle cx="${cx}" cy="${cy}" r="44" fill="#7C6FF0" opacity=".5" filter="url(#pm-glow)"/>
+    <g class="pm-core">${window.echoEmblemSvg(cx - 36, cy - 36, 72)}</g>`;
+}
+
 function pmQuote(i) {
   const it = state.pm.lift[i];
   if (!it) return '';
@@ -249,7 +266,23 @@ function powerMap() {
   if (!pm) return '';
   const head = `<h2>Карта сил</h2>`;
   if (pm.days < 7) {
-    return `<section class="card">${head}<p class="note" style="margin:0">Карта появится, когда в дневнике будет 7 дней. Сейчас — ${pm.days}.</p></section>`;
+    // Карта собирается: Эхо уже дышит, вокруг — тусклые точки того, что прозвучало; на 7-й день они встанут на орбиты
+    const [cx, cy] = PM_C;
+    const seen = (pm.seen || []).map((it, i, all) => {
+      const a = ((i * 360) / Math.max(all.length, 1) - 90) * Math.PI / 180;
+      const x = Math.round(cx + 96 * Math.cos(a)), y = Math.round(cy + 96 * Math.sin(a));
+      return `<g class="pm-seed"><circle cx="${x}" cy="${y}" r="11" fill="#A79DFF" opacity=".28"/>
+        <text x="${x}" y="${y + 4}" text-anchor="middle" font-size="10" opacity=".7">${it.e}</text>
+        <text x="${x}" y="${y + 25}" text-anchor="middle" font-size="11" fill="currentColor" opacity=".55">${esc(it.l)}</text></g>`;
+    }).join('');
+    const names = (pm.seen || []).slice(0, 3).map((it) => it.l).join(', ');
+    return `<section class="card">${head}
+      <svg class="pm" viewBox="0 0 340 330" role="img" aria-label="Карта сил собирается">
+        ${pmBase()}
+        ${seen}
+      </svg>
+      <p class="note" style="margin:6px 0 0">Карта собирается: ${pm.days} из 7 дней.${names ? ` Уже прозвучало: ${esc(names)}.` : ''}</p>
+    </section>`;
   }
   if (!pm.lift.length && !pm.drain.length) {
     return `<section class="card">${head}<p class="note" style="margin:0">Пока явных закономерностей не видно — так тоже бывает. Карта обновляется с каждой записью.</p></section>`;
@@ -278,17 +311,7 @@ function powerMap() {
       ${head}
       <p class="note" style="margin:0 0 4px">${f('На орбитах — то, что отзывается в ваших светлых днях. За волнами — то, что забирает силы.', 'На орбитах — то, что отзывается в твоих светлых днях. За волнами — то, что забирает силы.')}</p>
       <svg class="pm" viewBox="0 0 340 330" role="img" aria-label="Карта сил">
-        <defs>
-          <radialGradient id="pm-sat" cx="38%" cy="32%" r="75%"><stop offset="0%" stop-color="#E4DFFF"/><stop offset="55%" stop-color="#A79DFF"/><stop offset="100%" stop-color="#7C6FF0"/></radialGradient>
-          <filter id="pm-glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="7"/></filter>
-        </defs>
-        <circle class="pm-ripple" cx="${cx}" cy="${cy}" r="128"/>
-        <circle class="pm-ripple" style="animation-delay:-1.33s" cx="${cx}" cy="${cy}" r="128"/>
-        <circle class="pm-ripple" style="animation-delay:-2.66s" cx="${cx}" cy="${cy}" r="128"/>
-        <circle cx="${cx}" cy="${cy}" r="80" fill="none" stroke="#7C6FF0" stroke-opacity=".35" stroke-dasharray="2 6"/>
-        <circle cx="${cx}" cy="${cy}" r="110" fill="none" stroke="#7C6FF0" stroke-opacity=".22" stroke-dasharray="2 7"/>
-        <circle cx="${cx}" cy="${cy}" r="44" fill="#7C6FF0" opacity=".5" filter="url(#pm-glow)"/>
-        <g class="pm-core">${window.echoEmblemSvg(cx - 36, cy - 36, 72)}</g>
+        ${pmBase()}
         ${sats}
         <g class="pm-far">${far}</g>
       </svg>
