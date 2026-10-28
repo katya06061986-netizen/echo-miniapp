@@ -457,6 +457,11 @@ function settings() {
       </div>
     </section>
 
+    ${state.adm ? `<section class="card">
+      <h2>Для команды</h2>
+      <button class="btn subtle" data-action="metrics">📊 Метрики</button>
+    </section>` : ''}
+
     <section class="card">
       <h2>Данные</h2>
       <p class="note" style="margin:0 0 14px">Аудио не хранится: после распознавания голосовое удаляется. Эхо — инструмент саморефлексии, а не медицинская помощь.</p>
@@ -567,7 +572,7 @@ app.addEventListener('click', (ev) => {
     location.href = `practice.html?p=${practice}&a=${state.addr}&from=app`;
     return;
   }
-  if (['record', 'feedback', 'delete', 'tz', 'letter', 'theme', 'good', 'stats', 'name'].includes(action)) {
+  if (['record', 'feedback', 'delete', 'tz', 'letter', 'theme', 'good', 'stats', 'name', 'metrics'].includes(action)) {
     toChat(action);
   }
 });
