@@ -110,6 +110,9 @@ function toChat(action) {
   tg?.close?.();
 }
 
+/** Экстренная кнопка: на главном экране и первой карточкой в «Ещё» */
+const SOS_LABEL = '🤍 Помощь здесь и сейчас';
+
 /** Практики «Минутки для себя»: открываются страницей practice.html */
 const PRACTICES = [
   ['breath', '💨', 'Дыхание 4–6'],
@@ -176,21 +179,10 @@ function chart(range) {
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Настроение по дням">${out}</svg>`;
 }
 
-function topEmotions() {
-  const since = addDays(todayLocal(), -29);
-  const counts = new Map();
-  for (const e of state.entries) {
-    if (e.d < since) continue;
-    for (const em of e.e) counts.set(em, (counts.get(em) ?? 0) + 1);
-  }
-  return [...counts].sort((a, b) => b[1] - a[1]).slice(0, 5);
-}
-
 function overview() {
   const week = state.week;
   const last = state.entries[0];
   const filled = days().filter((d) => d.mood !== null).length;
-  const emotions = topEmotions();
   const heroText = week
     ? `<p class="big">${esc(week.title)}</p><p>${week.trend ? esc(week.trend[0].toUpperCase() + week.trend.slice(1)) + '.' : 'Ещё пара дней — и станет видно, как идёт неделя.'}</p>${state.st && week.avg !== null ? `<p class="note">В среднем ${fmt(week.avg)} из 10</p>` : ''}`
     : `<p class="big">Неделя только начинается</p><p>${f('Запишите голосовое о дне — и здесь появится ваше настроение.', 'Запиши голосовое о дне — и здесь появится твоё настроение.')}</p>`;
@@ -220,11 +212,7 @@ function overview() {
       ${chart(chartRange)}
     </section>
 
-    ${emotions.length ? `
-    <section class="card">
-      <h2>Чаще всего звучит</h2>
-      <div class="chips">${emotions.map(([em]) => `<span class="chip accent">${esc(em)}</span>`).join('')}</div>
-    </section>` : ''}
+    <button class="sos-btn" data-sos>${SOS_LABEL}</button>
 
     ${recordButton()}`;
 }
@@ -407,6 +395,12 @@ function more() {
       </div>
     </section>
 
+    <section class="card">
+      <h2>${SOS_LABEL}</h2>
+      <p class="note" style="margin:0 0 12px">Если накрыло тревогой или страхом — пара минут, чтобы переждать.</p>
+      <button class="btn" data-sos>Открыть</button>
+    </section>
+
     ${state.ar ? `<section class="card">
       <h2>📖 Почитать</h2>
       <p class="note" style="margin:0 0 12px">Короткие статьи психологов о том, как бережно относиться к себе.</p>
@@ -531,6 +525,11 @@ app.addEventListener('click', (ev) => {
   }
   const action = ev.target.closest('[data-action]')?.dataset.action;
   const practice = ev.target.closest('[data-practice]')?.dataset.practice;
+  if (ev.target.closest('[data-sos]')) {
+    haptic('medium');
+    location.href = `sos.html?a=${state.addr}`;
+    return;
+  }
   if (ev.target.closest('[data-read]')) {
     haptic('light');
     location.href = 'read.html';
