@@ -386,3 +386,8 @@ textarea { width: 100%; min-height: 110px; resize: vertical; margin-bottom: 12px
 .avatar-opt.is-active { border-color: var(--accent); background: var(--accent-soft); }
 .avatar-opt:disabled { opacity: 0.55; }
 .avatar-opt .soon { font-size: 34px; line-height: 56px; }
+
+/* Плитки-действия на главном экране */
+.stat-action { text-align: left; color: var(--text); cursor: pointer; font: inherit; }
+.stat-action b { font-size: 20px; }
+.stat-action span { color: var(--text-2); }

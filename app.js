@@ -185,7 +185,6 @@ function chart(range) {
 function overview() {
   const week = state.week;
   const last = state.ld;
-  const filled = days().filter((d) => d.mood !== null).length;
   const heroText = week
     ? `<p class="big">${esc(week.title)}</p><p>${week.trend ? esc(week.trend[0].toUpperCase() + week.trend.slice(1)) + '.' : 'Ещё пара дней — и станет видно, как идёт неделя.'}</p>${state.st && week.avg !== null ? `<p class="note">В среднем ${fmt(week.avg)} из 10</p>` : ''}`
     : `<p class="big">Неделя только начинается</p><p>${f('Запишите голосовое о дне — и здесь появится ваше настроение.', 'Запиши голосовое о дне — и здесь появится твоё настроение.')}</p>`;
@@ -200,8 +199,8 @@ function overview() {
 
     <div class="stats">
       <div class="stat"><b>${state.streak > 0 ? state.streak + ' 🔥' : 0}</b><span>${plural(state.streak, 'день', 'дня', 'дней')} без перерыва</span></div>
-      <div class="stat"><b>${state.total}</b><span>${plural(state.total, 'запись', 'записи', 'записей')}</span></div>
-      <div class="stat"><b>${filled}</b><span>${plural(filled, 'день', 'дня', 'дней')} за месяц</span></div>
+      <button class="stat stat-action" data-action="good"><b>🌼</b><span>Отзвуки хорошего</span></button>
+      <button class="stat stat-action" data-action="letter"><b>✉️</b><span>Письмо себе</span></button>
     </div>
 
     <section class="card">
@@ -370,12 +369,6 @@ function more() {
       <button class="btn" data-sos>Открыть</button>
     </section>
 
-    <section class="card">
-      <h2>🌼 Отзвуки хорошего</h2>
-      <p class="note" style="margin:0 0 12px">Сохранить, что сегодня порадовало, — потом оно вернётся эхом.</p>
-      <button class="btn" data-action="good">Сохранить хорошее</button>
-    </section>
-
     ${state.ar ? `<section class="card">
       <h2>📖 Почитать</h2>
       <p class="note" style="margin:0 0 12px">Короткие статьи психологов о том, как бережно относиться к себе.</p>
@@ -397,11 +390,7 @@ function more() {
       ${state.ts ? `<details class="topic-sum"><summary>Итог прошлой темы</summary><p>${esc(state.ts)}</p></details>` : ''}
     </section>` : ''}
 
-    <section class="card">
-      <h2>Письмо себе</h2>
-      <p class="note" style="margin:0 0 12px">${f('О том, как вы сейчас: что тревожит, о чём мечтается. Через месяц письмо вернётся к вам эхом.', 'О том, как ты сейчас: что тревожит, о чём мечтается. Через месяц письмо вернётся к тебе эхом.')}</p>
-      <button class="btn" data-action="letter">✉️ Написать письмо</button>
-    </section>`;
+`;
 }
 
 function settings() {
