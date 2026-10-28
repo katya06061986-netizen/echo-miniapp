@@ -282,7 +282,19 @@ textarea { width: 100%; min-height: 110px; resize: vertical; margin-bottom: 12px
 @keyframes shrink { from { transform: scale(1); } to { transform: scale(0.6); } }
 .phase { font-size: 20px; font-weight: 600; min-height: 28px; }
 .big-num { font-size: 96px; font-weight: 700; line-height: 1; color: var(--accent); margin-top: 24px; }
-@media (prefers-reduced-motion: reduce) { .orb, .orb.in, .orb.out { animation: none; } }
+/* Эмблема Эхо вместо круга: волна «поёт», от ядра расходится мягкая волна-пульс */
+.orb { position: relative; background: none; box-shadow: none; }
+.orb-emblem { display: block; width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 0 60px var(--glow); }
+.orb-emblem svg { display: block; width: 100%; height: 100%; }
+.orb::after {
+  content: ''; position: absolute; inset: 0; border-radius: 50%;
+  border: 2px solid var(--accent); opacity: 0; animation: ripple 3s ease-out infinite;
+}
+@keyframes ripple { from { transform: scale(1); opacity: 0.5; } to { transform: scale(1.35); opacity: 0; } }
+.orb .bar { transform-box: fill-box; transform-origin: center; animation: wave 1.8s ease-in-out infinite; animation-delay: calc(var(--i) * -0.3s); }
+@keyframes wave { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.65); } }
+.orb.still::after, .orb.still .bar { animation: none; }
+@media (prefers-reduced-motion: reduce) { .orb, .orb.in, .orb.out, .orb::after, .orb .bar { animation: none; } }
 
 /* «Ещё»: практики плиткой и итог прошлой темы */
 .practices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }

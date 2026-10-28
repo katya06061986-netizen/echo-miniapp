@@ -92,5 +92,6 @@ document.addEventListener('click', (ev) => {
 safe(() => tg.ready(), () => tg.expand(), () => tg.onEvent('themeChanged', applyTheme));
 safe(() => tg.BackButton.show(), () => tg.BackButton.onClick(() => history.back()));
 applyTheme();
+$('orb').innerHTML = window.echoEmblem('orb-emblem');
 sound.warm(kind);
 render();

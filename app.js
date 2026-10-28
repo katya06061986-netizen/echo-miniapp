@@ -120,19 +120,8 @@ const PRACTICES = [
 
 // ---------- экраны ----------
 
-/** Эмблема Эхо — ядро со звуковой волной, как на аватарке бота; «дышит» */
-function emblem() {
-  return `<span class="emblem" aria-hidden="true"><svg viewBox="0 0 264 264">
-    <defs><radialGradient id="emblem-core" cx="40%" cy="35%" r="75%">
-      <stop offset="0%" stop-color="#A79DFF"/><stop offset="55%" stop-color="#7C6FF0"/><stop offset="100%" stop-color="#5A4CD6"/>
-    </radialGradient></defs>
-    <circle cx="132" cy="132" r="132" fill="url(#emblem-core)"/>
-    <g fill="#F4F2FF">
-      <rect x="48" y="108" width="20" height="48" rx="10"/><rect x="84" y="74" width="20" height="116" rx="10"/>
-      <rect x="120" y="38" width="24" height="188" rx="12"/><rect x="160" y="74" width="20" height="116" rx="10"/>
-      <rect x="196" y="108" width="20" height="48" rx="10"/>
-    </g></svg></span>`;
-}
+/** Эмблема Эхо — из emblem.js; «дышит» */
+const emblem = () => window.echoEmblem();
 
 function ring(value) {
   const r = 42, len = 2 * Math.PI * r;

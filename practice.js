@@ -54,6 +54,9 @@ const PRACTICES = {
   },
 };
 
+/** Вместо простого круга дышит эмблема Эхо */
+const orbEmblem = () => window.echoEmblem('orb-emblem');
+
 const id = Object.hasOwn(PRACTICES, params.get('p')) ? params.get('p') : 'breath';
 const practice = PRACTICES[id];
 let timer = null;
@@ -78,7 +81,7 @@ function intro() {
     <section class="practice-card">
       <h1>${practice.title}</h1>
       <p>${practice.text}</p>
-      <div class="orb"></div>
+      <div class="orb">${orbEmblem()}</div>
       <button class="btn" id="go">Начать</button>
     </section>`;
   document.getElementById('go').onclick = () => {
@@ -96,7 +99,7 @@ function run(round, phase) {
   app.innerHTML = `
     <section class="practice-card">
       <h1>${practice.title}</h1>
-      <div class="orb ${kind}" style="--sec:${sec}s"></div>
+      <div class="orb ${kind}" style="--sec:${sec}s">${orbEmblem()}</div>
       <div class="phase">${label}</div>
       <p class="note">${counter}</p>
     </section>`;
@@ -124,7 +127,7 @@ function done() {
   app.innerHTML = `
     <section class="practice-card">
       <h1>Готово 🌿</h1>
-      <div class="orb"></div>
+      <div class="orb">${orbEmblem()}</div>
       <button class="btn" id="again">Ещё раз</button>
       <button class="btn subtle" id="close">${fromApp ? 'Назад' : 'Вернуться в чат'}</button>
     </section>`;
