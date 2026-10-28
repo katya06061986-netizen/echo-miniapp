@@ -12,7 +12,7 @@ const tabsEl = document.getElementById('tabs');
 const BOT = new URLSearchParams(location.search).get('b') || '';
 
 let state = null;
-let tab = ['overview', 'entries', 'recipe', 'feedback', 'more'].includes(new URLSearchParams(location.search).get('tab')) ? new URLSearchParams(location.search).get('tab') : 'overview';
+let tab = ['overview', 'entries', 'recipe', 'feedback', 'more', 'settings'].includes(new URLSearchParams(location.search).get('tab')) ? new URLSearchParams(location.search).get('tab') : 'overview';
 let chartRange = 7;
 
 const WEEKDAYS = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
@@ -109,6 +109,14 @@ function toChat(action) {
   else if (BOT) location.href = link;
   tg?.close?.();
 }
+
+/** Практики «Минутки для себя»: открываются страницей practice.html */
+const PRACTICES = [
+  ['breath', '💨', 'Дыхание 4–6'],
+  ['grounding', '🖐', '5-4-3-2-1'],
+  ['shoulders', '💆', 'Опустить плечи'],
+  ['silence', '🍃', 'Пауза в тишине'],
+];
 
 // ---------- экраны ----------
 
@@ -304,12 +312,40 @@ function feedback() {
 }
 
 function more() {
+  return `
+    <header class="hello"><h1>Ещё</h1></header>
+
+    <section class="card">
+      <h2>Минутка для себя</h2>
+      <p class="note" style="margin:0 0 12px">Короткие практики на минуту — когда тревожно или нет сил.</p>
+      <div class="practices">
+        ${PRACTICES.map(([id, emoji, title]) => `<button class="practice-btn" data-practice="${id}"><span>${emoji}</span>${title}</button>`).join('')}
+      </div>
+    </section>
+
+    ${state.topicsOn ? `<section class="card">
+      <h2>Тема недели</h2>
+      ${state.topic
+        ? `<p style="margin:0 0 12px">${esc(state.topic.t)} · ${state.topic.d >= 1 ? `день ${Math.min(state.topic.d, 7)} из 7` : 'начнётся завтра'}</p>`
+        : `<p class="note" style="margin:0 0 12px">7 вечеров — один вопрос по теме к напоминанию, в конце — итог из ${f('ваших', 'твоих')} слов.</p>`}
+      <button class="btn${state.topic ? ' subtle' : ''}" data-action="theme">${state.topic ? 'Сменить тему' : 'Выбрать тему'}</button>
+      ${state.ts ? `<details class="topic-sum"><summary>Итог прошлой темы</summary><p>${esc(state.ts)}</p></details>` : ''}
+    </section>` : ''}
+
+    <section class="card">
+      <h2>Письмо себе</h2>
+      <p class="note" style="margin:0 0 12px">${f('О том, как вы сейчас: что тревожит, о чём мечтается. Через месяц Эхо вернёт его вам.', 'О том, как ты сейчас: что тревожит, о чём мечтается. Через месяц Эхо вернёт его тебе.')}</p>
+      <button class="btn" data-action="letter">✉️ Написать письмо</button>
+    </section>`;
+}
+
+function settings() {
   const on = state.remind !== null;
   const mOn = state.morning !== null && state.morning !== undefined;
   const mHours = Array.from({ length: 24 }, (_, h) => `<option value="${h}" ${h === (state.morning ?? 9) ? 'selected' : ''}>${String(h).padStart(2, '0')}:00</option>`).join('');
   const hours = Array.from({ length: 24 }, (_, h) => `<option value="${h}" ${h === (state.remind ?? 21) ? 'selected' : ''}>${String(h).padStart(2, '0')}:00</option>`).join('');
   return `
-    <header class="hello"><h1>Ещё</h1></header>
+    <header class="hello"><h1>Настройки</h1></header>
 
     <section class="card">
       <h2>Напоминание</h2>
@@ -337,12 +373,6 @@ function more() {
     </section>
 
     <section class="card">
-      <h2>Письмо себе</h2>
-      <p class="note" style="margin:0 0 12px">${f('О том, как вы сейчас: что тревожит, о чём мечтается. Через месяц Эхо вернёт его вам.', 'О том, как ты сейчас: что тревожит, о чём мечтается. Через месяц Эхо вернёт его тебе.')}</p>
-      <button class="btn" data-action="letter">✉️ Написать письмо</button>
-    </section>
-
-    <section class="card">
       <h2>Данные</h2>
       <p class="note" style="margin:0 0 14px">Аудио не хранится: после распознавания голосовое удаляется. Эхо — инструмент саморефлексии, а не медицинская помощь.</p>
       <button class="btn ghost" data-action="delete">Удалить все мои данные</button>
@@ -352,7 +382,7 @@ function more() {
 // ---------- отрисовка и события ----------
 
 function render() {
-  const views = { overview, entries, recipe, feedback, more };
+  const views = { overview, entries, recipe, feedback, more, settings };
   app.innerHTML = `<div class="view">${views[tab]()}</div>`;
   for (const b of tabsEl.querySelectorAll('.tab')) b.classList.toggle('is-active', b.dataset.tab === tab);
 }
@@ -380,7 +410,13 @@ app.addEventListener('click', (ev) => {
     return;
   }
   const action = ev.target.closest('[data-action]')?.dataset.action;
-  if (['record', 'feedback', 'delete', 'tz', 'letter'].includes(action)) {
+  const practice = ev.target.closest('[data-practice]')?.dataset.practice;
+  if (practice) {
+    haptic('light');
+    location.href = `practice.html?p=${practice}&a=${state.addr}&from=app`;
+    return;
+  }
+  if (['record', 'feedback', 'delete', 'tz', 'letter', 'theme'].includes(action)) {
     toChat(action);
   }
 });

@@ -11,6 +11,8 @@ const app = document.getElementById('app');
 const params = new URLSearchParams(location.search);
 const ty = params.get('a') === 'ty';
 const f = (vy, t) => (ty ? t : vy);
+/** Открыта из mini app (а не кнопкой под записью) — возвращаемся назад, а не в чат */
+const fromApp = params.get('from') === 'app';
 
 const PRACTICES = {
   breath: {
@@ -119,12 +121,13 @@ function done() {
       <h1>Готово 🌿</h1>
       <div class="orb"></div>
       <button class="btn" id="again">Ещё раз</button>
-      <button class="btn subtle" id="close">Вернуться в чат</button>
+      <button class="btn subtle" id="close">${fromApp ? 'Назад' : 'Вернуться в чат'}</button>
     </section>`;
   document.getElementById('again').onclick = intro;
-  document.getElementById('close').onclick = () => (tg ? tg.close() : history.back());
+  document.getElementById('close').onclick = () => (fromApp || !tg ? history.back() : tg.close());
 }
 
 safe(() => tg.ready(), () => tg.expand(), () => tg.onEvent('themeChanged', applyTheme));
+if (fromApp) safe(() => tg.BackButton.show(), () => tg.BackButton.onClick(() => history.back()));
 applyTheme();
 intro();

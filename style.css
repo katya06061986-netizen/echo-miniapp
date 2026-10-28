@@ -243,15 +243,17 @@ textarea { width: 100%; min-height: 110px; resize: vertical; margin-bottom: 12px
 /* Нижние вкладки */
 .tabs {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
-  display: grid; grid-template-columns: repeat(5, 1fr);
+  display: grid; grid-template-columns: repeat(6, 1fr);
   height: calc(var(--tabs-h) + var(--safe-b)); padding-bottom: var(--safe-b);
   background: var(--tabs-bg);
   backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
   border-top: 1px solid var(--border);
 }
-.tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--text-3); font-size: 11px; }
+.tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-width: 0; color: var(--text-3); font-size: 11px; }
+.tab span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tab svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .tab svg circle { fill: currentColor; stroke: none; }
+.tab svg circle.hole { fill: none; stroke: currentColor; }
 .tab.is-active { color: var(--accent); }
 
 /* «Минутка для себя» (practice.html): круг дышит вместе с человеком */
@@ -275,3 +277,15 @@ textarea { width: 100%; min-height: 110px; resize: vertical; margin-bottom: 12px
 .phase { font-size: 20px; font-weight: 600; min-height: 28px; }
 .big-num { font-size: 96px; font-weight: 700; line-height: 1; color: var(--accent); margin-top: 24px; }
 @media (prefers-reduced-motion: reduce) { .orb, .orb.in, .orb.out { animation: none; } }
+
+/* «Ещё»: практики плиткой и итог прошлой темы */
+.practices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.practice-btn {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+  padding: 12px; border-radius: var(--radius-sm); text-align: left;
+  background: var(--surface-2); color: var(--text); font-weight: 550; font-size: 14px;
+}
+.practice-btn span { font-size: 20px; }
+.topic-sum { margin-top: 12px; color: var(--text-2); font-size: 14px; }
+.topic-sum summary { cursor: pointer; color: var(--text-2); }
+.topic-sum p { margin-top: 8px; white-space: pre-line; }
