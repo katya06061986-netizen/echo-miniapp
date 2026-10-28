@@ -226,8 +226,6 @@ function overview() {
       <div class="chips">${emotions.map(([em]) => `<span class="chip accent">${esc(em)}</span>`).join('')}</div>
     </section>` : ''}
 
-    ${powerMap()}
-
     ${recordButton()}`;
 }
 
@@ -345,11 +343,12 @@ function recipe() {
         <p>Ещё ${left} ${plural(left, 'день', 'дня', 'дней')} с записями — и станет видно, что чаще бывает в светлые дни.</p>
         <div class="progress"><div style="width:${(have / need) * 100}%"></div></div>
         <p class="note">${have} из ${need}</p>
-      </section>`;
+      </section>
+      ${powerMap()}`;
   }
   // Текст рецепта — уже готовый, связными абзацами; первую строку-заголовок не повторяем
   const paragraphs = text.split('\n\n').map((p) => p.replace(/^🍀[^\n]*\n?/, '').trim()).filter(Boolean);
-  return `${head}<section class="card">${paragraphs.map((p) => `<p>${esc(p)}</p>`).join('')}</section>`;
+  return `${head}<section class="card">${paragraphs.map((p) => `<p>${esc(p)}</p>`).join('')}</section>${powerMap()}`;
 }
 
 function feedback() {
