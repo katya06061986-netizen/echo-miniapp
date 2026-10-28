@@ -307,3 +307,18 @@ textarea { width: 100%; min-height: 110px; resize: vertical; margin-bottom: 12px
 .topic-sum { margin-top: 12px; color: var(--text-2); font-size: 14px; }
 .topic-sum summary { cursor: pointer; color: var(--text-2); }
 .topic-sum p { margin-top: 8px; white-space: pre-line; }
+
+/* «Карта сил»: Эхо в центре дышит, от него идут волны; на орбитах — что отзывается в светлых днях */
+.pm { width: 100%; display: block; color: var(--text); }
+.pm text { font-family: inherit; }
+.pm-ripple { fill: none; stroke: #A79DFF; stroke-width: 1.5; transform-box: view-box; transform-origin: 170px 165px; animation: pm-ripple 4s ease-out infinite; }
+@keyframes pm-ripple { from { transform: scale(0.35); opacity: 0.55; } to { transform: scale(1); opacity: 0; } }
+.pm-core { transform-box: view-box; transform-origin: 170px 165px; animation: pm-breathe 4s ease-in-out infinite; }
+@keyframes pm-breathe { 0%, 100% { transform: scale(0.9); } 50% { transform: scale(1.04); } }
+.pm-core .bar { transform-box: fill-box; transform-origin: center; animation: wave 1.8s ease-in-out infinite; animation-delay: calc(var(--i) * -0.3s); }
+.pm-sat { cursor: pointer; animation: pm-float 6s ease-in-out infinite; }
+@keyframes pm-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+.pm-far { opacity: 0.42; }
+.pm-quote { margin-top: 12px; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); font-size: 14px; }
+.pm-quote small { display: block; color: var(--text-2); font-size: 12px; margin-bottom: 2px; }
+@media (prefers-reduced-motion: reduce) { .pm-ripple, .pm-core, .pm-core .bar, .pm-sat { animation: none; } .pm-ripple { opacity: 0.25; } }

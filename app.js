@@ -226,7 +226,77 @@ function overview() {
       <div class="chips">${emotions.map(([em]) => `<span class="chip accent">${esc(em)}</span>`).join('')}</div>
     </section>` : ''}
 
+    ${powerMap()}
+
     ${recordButton()}`;
+}
+
+// ---------- «Карта сил» ----------
+
+const PM_C = [170, 165];
+/** Места на орбитах для того, что даёт силы: угол (°) — сильное ближе к Эхо */
+const PM_SLOTS = [-28, 205, 100];
+/** Что забирает силы — за волнами, по углам: x, y, выравнивание подписи */
+const PM_FAR = [[30, 300, 'start'], [310, 26, 'end'], [310, 300, 'end']];
+let pmSel = 0;
+
+function pmQuote(i) {
+  const it = state.pm.lift[i];
+  if (!it) return '';
+  return `<small>${it.e} ${esc(it.l)} · ${esc(it.h)}</small>${it.q ? `«${esc(it.q)}»` : ''}`;
+}
+
+function powerMap() {
+  const pm = state.pm;
+  if (!pm) return '';
+  const head = `<h2>Карта сил</h2>`;
+  if (pm.days < 7) {
+    return `<section class="card">${head}<p class="note" style="margin:0">Карта появится, когда в дневнике будет 7 дней. Сейчас — ${pm.days}.</p></section>`;
+  }
+  if (!pm.lift.length && !pm.drain.length) {
+    return `<section class="card">${head}<p class="note" style="margin:0">Пока явных закономерностей не видно — так тоже бывает. Карта обновляется с каждой записью.</p></section>`;
+  }
+  const [cx, cy] = PM_C;
+  const sats = pm.lift.map((it, i) => {
+    const r = it.w >= 2 ? 80 : 110;
+    const a = (PM_SLOTS[i] * Math.PI) / 180;
+    const x = Math.round(cx + r * Math.cos(a)), y = Math.round(cy + r * Math.sin(a));
+    const size = [0, 13, 17, 21][it.w];
+    return `<g class="pm-sat" style="animation-delay:${-i * 2}s" data-pm="${i}">
+      <circle cx="${x}" cy="${y}" r="${size + 3}" fill="#A79DFF" opacity=".5" filter="url(#pm-glow)"/>
+      <circle cx="${x}" cy="${y}" r="${size}" fill="url(#pm-sat)"/>
+      <text x="${x}" y="${y + size * 0.3}" text-anchor="middle" font-size="${Math.round(size * 0.8)}">${it.e}</text>
+      <text x="${x}" y="${y + size + 16}" text-anchor="middle" font-size="12" fill="currentColor">${esc(it.l)}</text>
+    </g>`;
+  }).join('');
+  const far = pm.drain.map((it, i) => {
+    const [x, y, anchor] = PM_FAR[i];
+    const tx = anchor === 'start' ? x + 14 : x - 14;
+    return `<circle cx="${x}" cy="${y}" r="8" fill="none" stroke="#A79DFF" stroke-dasharray="2 3"/>
+      <text x="${tx}" y="${y + 4}" text-anchor="${anchor}" font-size="11" fill="currentColor">${esc(it.l)}</text>`;
+  }).join('');
+  return `
+    <section class="card">
+      ${head}
+      <p class="note" style="margin:0 0 4px">${f('На орбитах — то, что отзывается в ваших светлых днях. За волнами — то, что забирает силы.', 'На орбитах — то, что отзывается в твоих светлых днях. За волнами — то, что забирает силы.')}</p>
+      <svg class="pm" viewBox="0 0 340 330" role="img" aria-label="Карта сил">
+        <defs>
+          <radialGradient id="pm-sat" cx="38%" cy="32%" r="75%"><stop offset="0%" stop-color="#E4DFFF"/><stop offset="55%" stop-color="#A79DFF"/><stop offset="100%" stop-color="#7C6FF0"/></radialGradient>
+          <filter id="pm-glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="7"/></filter>
+        </defs>
+        <circle class="pm-ripple" cx="${cx}" cy="${cy}" r="128"/>
+        <circle class="pm-ripple" style="animation-delay:-1.33s" cx="${cx}" cy="${cy}" r="128"/>
+        <circle class="pm-ripple" style="animation-delay:-2.66s" cx="${cx}" cy="${cy}" r="128"/>
+        <circle cx="${cx}" cy="${cy}" r="80" fill="none" stroke="#7C6FF0" stroke-opacity=".35" stroke-dasharray="2 6"/>
+        <circle cx="${cx}" cy="${cy}" r="110" fill="none" stroke="#7C6FF0" stroke-opacity=".22" stroke-dasharray="2 7"/>
+        <circle cx="${cx}" cy="${cy}" r="44" fill="#7C6FF0" opacity=".5" filter="url(#pm-glow)"/>
+        <g class="pm-core">${window.echoEmblemSvg(cx - 36, cy - 36, 72)}</g>
+        ${sats}
+        <g class="pm-far">${far}</g>
+      </svg>
+      ${pm.lift.length ? `<div class="pm-quote" id="pm-quote">${pmQuote(pmSel)}</div>` : ''}
+      <p class="note" style="margin:10px 0 0">Это наблюдение, а не правило. Чем больше записей, тем точнее.</p>
+    </section>`;
 }
 
 function recordButton() {
@@ -397,6 +467,14 @@ app.addEventListener('click', (ev) => {
     chartRange = Number(range.dataset.range);
     haptic('light');
     render();
+    return;
+  }
+  const sat = ev.target.closest('[data-pm]');
+  if (sat) {
+    pmSel = Number(sat.dataset.pm);
+    haptic('light');
+    // только подпись под картой — без перерисовки, чтобы волны не начинались заново
+    document.getElementById('pm-quote').innerHTML = pmQuote(pmSel);
     return;
   }
   const entry = ev.target.closest('[data-entry]');
