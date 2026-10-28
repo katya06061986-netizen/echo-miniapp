@@ -440,6 +440,10 @@ function settings() {
   const mOn = state.morning !== null && state.morning !== undefined;
   const mHours = Array.from({ length: 24 }, (_, h) => `<option value="${h}" ${h === (state.morning ?? 9) ? 'selected' : ''}>${String(h).padStart(2, '0')}:00</option>`).join('');
   const hours = Array.from({ length: 24 }, (_, h) => `<option value="${h}" ${h === (state.remind ?? 21) ? 'selected' : ''}>${String(h).padStart(2, '0')}:00</option>`).join('');
+  // Дневной вопрос: по умолчанию дважды, в 12:00 и 17:00
+  const ck = state.ck || { n: 2, h: 12 };
+  const ckOn = ck.n > 0;
+  const ckHours = Array.from({ length: 8 }, (_, i) => i + 8).map((h) => `<option value="${h}" ${h === ck.h ? 'selected' : ''}>${String(h).padStart(2, '0')}:00</option>`).join('');
   return `
     <header class="hello"><h1>Настройки</h1></header>
 
@@ -460,6 +464,18 @@ function settings() {
       <div class="row" ${mOn ? '' : 'hidden'}>
         <div>Время</div>
         <select id="morning-hour">${mHours}</select>
+      </div>
+      <div class="row">
+        <div><div>Вопрос днём</div><p>${f('Как вы сейчас — ответить можно одной кнопкой', 'Как ты сейчас — ответить можно одной кнопкой')}</p></div>
+        <label class="switch"><input type="checkbox" id="checkin-on" ${ckOn ? 'checked' : ''} aria-label="Вопрос днём"><span></span></label>
+      </div>
+      <div class="row" ${ckOn ? '' : 'hidden'}>
+        <div>Сколько раз</div>
+        <select id="checkin-count">${[1, 2, 3].map((n) => `<option value="${n}" ${n === (ck.n || 2) ? 'selected' : ''}>${n === 1 ? 'Раз в день' : n === 2 ? 'Два раза' : 'Три раза'}</option>`).join('')}</select>
+      </div>
+      <div class="row" ${ckOn ? '' : 'hidden'}>
+        <div>Первый вопрос</div>
+        <select id="checkin-hour">${ckHours}</select>
       </div>
       <div class="row">
         <div><div>Минутка для себя</div><p>Короткая практика после тревожных или усталых записей</p></div>
@@ -540,6 +556,11 @@ app.addEventListener('change', (ev) => {
   if (ev.target.id === 'morning-on' || ev.target.id === 'morning-hour') {
     const on = document.getElementById('morning-on').checked;
     toChat(on ? `morning_${document.getElementById('morning-hour').value}` : 'morning_off');
+    return;
+  }
+  if (['checkin-on', 'checkin-count', 'checkin-hour'].includes(ev.target.id)) {
+    const on = document.getElementById('checkin-on').checked;
+    toChat(on ? `checkin_${document.getElementById('checkin-count').value}_${document.getElementById('checkin-hour').value}` : 'checkin_off');
     return;
   }
   if (ev.target.id === 'practices-on') {
