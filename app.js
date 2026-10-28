@@ -370,6 +370,12 @@ function more() {
       <button class="btn" data-sos>Открыть</button>
     </section>
 
+    <section class="card">
+      <h2>🌼 Отзвуки хорошего</h2>
+      <p class="note" style="margin:0 0 12px">Сохранить, что сегодня порадовало, — потом оно вернётся эхом.</p>
+      <button class="btn" data-action="good">Сохранить хорошее</button>
+    </section>
+
     ${state.ar ? `<section class="card">
       <h2>📖 Почитать</h2>
       <p class="note" style="margin:0 0 12px">Короткие статьи психологов о том, как бережно относиться к себе.</p>
@@ -566,7 +572,7 @@ app.addEventListener('click', (ev) => {
     location.href = `practice.html?p=${practice}&a=${state.addr}&from=app`;
     return;
   }
-  if (['record', 'feedback', 'delete', 'tz', 'letter', 'theme'].includes(action)) {
+  if (['record', 'feedback', 'delete', 'tz', 'letter', 'theme', 'good'].includes(action)) {
     toChat(action);
   }
 });
