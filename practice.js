@@ -81,7 +81,11 @@ function intro() {
       <div class="orb"></div>
       <button class="btn" id="go">Начать</button>
     </section>`;
-  document.getElementById('go').onclick = practice.steps ? () => step(0) : () => run(0, 0);
+  document.getElementById('go').onclick = () => {
+    startSound();
+    if (practice.steps) step(0);
+    else run(0, 0);
+  };
 }
 
 /** Круг дышит вместе с человеком: растёт на вдохе, сжимается на выдохе */
@@ -116,6 +120,7 @@ function step(i) {
 
 function done() {
   safe(() => tg.HapticFeedback.notificationOccurred('success'));
+  window.EchoSound?.stop(4);
   app.innerHTML = `
     <section class="practice-card">
       <h1>Готово 🌿</h1>
@@ -126,6 +131,38 @@ function done() {
   document.getElementById('again').onclick = intro;
   document.getElementById('close').onclick = () => (fromApp || !tg ? history.back() : tg.close());
 }
+
+// ——— Фоновый звук под практику: по умолчанию без звука, выбор запоминается ———
+const sound = window.EchoSound;
+const soundRow = document.getElementById('sound-row');
+
+function startSound() {
+  if (sound?.choice) sound.play(sound.choice);
+}
+
+function renderSoundRow() {
+  if (!sound) return;
+  const current = sound.choice;
+  const options = [[null, '🔇 Без звука'], ...sound.KINDS];
+  soundRow.innerHTML = options
+    .map(([kind, label]) => `<button class="chip${kind === current ? ' accent' : ''}" data-sound="${kind ?? 'off'}">${label}</button>`)
+    .join('');
+}
+
+soundRow.addEventListener('click', (ev) => {
+  const btn = ev.target.closest('[data-sound]');
+  if (!btn) return;
+  const kind = btn.dataset.sound === 'off' ? null : btn.dataset.sound;
+  sound.choice = kind;
+  safe(() => tg.HapticFeedback.selectionChanged());
+  // выбор сразу слышен — как примерка
+  if (kind) sound.play(kind);
+  else sound.stop();
+  renderSoundRow();
+});
+
+renderSoundRow();
+if (sound?.choice) sound.warm(sound.choice);
 
 safe(() => tg.ready(), () => tg.expand(), () => tg.onEvent('themeChanged', applyTheme));
 if (fromApp) safe(() => tg.BackButton.show(), () => tg.BackButton.onClick(() => history.back()));

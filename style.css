@@ -257,7 +257,12 @@ textarea { width: 100%; min-height: 110px; resize: vertical; margin-bottom: 12px
 .tab.is-active { color: var(--accent); }
 
 /* «Минутка для себя» (practice.html): круг дышит вместе с человеком */
-.practice { min-height: 100vh; display: flex; align-items: center; padding-bottom: 20px; }
+.practice { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; gap: 28px; padding-bottom: 20px; }
+.practice #app { width: 100%; }
+.orb.still { animation: none; opacity: 0.55; }
+.sound-pick { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.sound-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.sound-row .chip, .sound-pick .chip { border: 0; padding: 7px 12px; font-size: 14px; }
 .practice-card { width: 100%; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 18px; }
 .practice-card h1 { font-size: 24px; font-weight: 650; letter-spacing: -0.02em; }
 .practice-card p { color: var(--text-2); max-width: 340px; }

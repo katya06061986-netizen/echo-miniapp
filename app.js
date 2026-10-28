@@ -323,6 +323,12 @@ function more() {
       </div>
     </section>
 
+    <section class="card">
+      <h2>🎧 Звуки</h2>
+      <p class="note" style="margin:0 0 12px">Тихий фон, чтобы побыть с собой: дождь, море или лес.</p>
+      <button class="btn" data-sounds>Послушать</button>
+    </section>
+
     ${state.topicsOn ? `<section class="card">
       <h2>Тема недели</h2>
       ${state.topic
@@ -411,6 +417,11 @@ app.addEventListener('click', (ev) => {
   }
   const action = ev.target.closest('[data-action]')?.dataset.action;
   const practice = ev.target.closest('[data-practice]')?.dataset.practice;
+  if (ev.target.closest('[data-sounds]')) {
+    haptic('light');
+    location.href = 'sounds.html';
+    return;
+  }
   if (practice) {
     haptic('light');
     location.href = `practice.html?p=${practice}&a=${state.addr}&from=app`;
