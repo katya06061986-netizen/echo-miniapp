@@ -2,7 +2,7 @@
 
 /*
  * «Минутка для себя» — короткая практика после тревожной или усталой записи.
- * Ссылка: practice.html?p=breath|grounding|shoulders|silence&a=vy|ty. Данных человека здесь нет.
+ * Ссылка: practice.html?p=breath|grounding|shoulders|silence&a=vy|ty[&s=rain|sea|forest|music]. Данных человека здесь нет.
  * Тексты практик согласованы (docs/approvals/2026-10-28.md); «ты»-формы — парные к ним.
  */
 
@@ -162,6 +162,8 @@ soundRow.addEventListener('click', (ev) => {
   renderSoundRow();
 });
 
+// ?s=rain — звук предложен ссылкой (например, из новости «Новое в Эхо»); дальше человек выбирает сам
+if (sound && sound.KINDS.some(([k]) => k === params.get('s'))) sound.choice = params.get('s');
 renderSoundRow();
 if (sound?.choice) sound.warm(sound.choice);
 
