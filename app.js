@@ -365,7 +365,7 @@ function feedback() {
         <div class="ask"><span class="icon">${icon}</span><div><b>${title}</b><p>${hint}</p></div></div>`).join('')}
     </section>
     <section class="card">
-      <p>Можно пару слов, можно подробно. Отзыв прочитает команда проекта, в дневник он не попадёт.</p>
+      <p>Можно пару слов, можно подробно. Отзыв анонимный: команда прочитает только текст, без имени. В дневник он не попадёт.</p>
       <button class="btn" data-action="feedback" style="margin-top:14px">✍️ Написать отзыв в чате</button>
     </section>`;
 }
