@@ -381,6 +381,12 @@ function more() {
       </div>
     </section>
 
+    ${state.ar ? `<section class="card">
+      <h2>📖 Почитать</h2>
+      <p class="note" style="margin:0 0 12px">Короткие статьи психологов о том, как бережно относиться к себе.</p>
+      <button class="btn" data-read>Открыть</button>
+    </section>` : ''}
+
     <section class="card">
       <h2>🎧 Звуки</h2>
       <p class="note" style="margin:0 0 12px">Тихий фон, чтобы побыть с собой: дождь, море, лес или музыка.</p>
@@ -483,6 +489,11 @@ app.addEventListener('click', (ev) => {
   }
   const action = ev.target.closest('[data-action]')?.dataset.action;
   const practice = ev.target.closest('[data-practice]')?.dataset.practice;
+  if (ev.target.closest('[data-read]')) {
+    haptic('light');
+    location.href = 'read.html';
+    return;
+  }
   if (ev.target.closest('[data-sounds]')) {
     haptic('light');
     location.href = 'sounds.html';

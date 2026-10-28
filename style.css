@@ -322,3 +322,29 @@ textarea { width: 100%; min-height: 110px; resize: vertical; margin-bottom: 12px
 .pm-quote { margin-top: 12px; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); font-size: 14px; }
 .pm-quote small { display: block; color: var(--text-2); font-size: 12px; margin-bottom: 2px; }
 @media (prefers-reduced-motion: reduce) { .pm-ripple, .pm-core, .pm-core .bar, .pm-sat { animation: none; } .pm-ripple { opacity: 0.25; } }
+
+/* «Почитать»: статьи психологов и страница автора */
+.read a { color: var(--accent); }
+.article-card { display: block; color: inherit !important; text-decoration: none; }
+.article-card h2 { margin-bottom: 6px; }
+.article-card p { color: var(--text-2); margin: 0 0 6px; }
+.article h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; margin: 8px 0 6px; }
+.article-body { margin-top: 18px; font-size: 17px; line-height: 1.6; }
+.article-body p, .article-body ul, .article-body blockquote { margin: 0 0 14px; }
+.article-body h2 { font-size: 20px; margin: 22px 0 10px; }
+.article-body ul { padding-left: 20px; }
+.article-body blockquote { border-left: 3px solid var(--accent); padding: 4px 0 4px 14px; color: var(--text-2); font-style: italic; }
+.article hr { border: 0; border-top: 1px solid var(--surface-2); margin: 24px 0 14px; }
+.author-chip { display: flex; align-items: center; gap: 10px; margin-top: 14px; color: inherit !important; text-decoration: none; }
+.author-chip span { display: flex; flex-direction: column; font-size: 13px; color: var(--text-2); }
+.author-chip b { color: var(--text); font-size: 15px; }
+.author-photo {
+  display: inline-grid; place-items: center; width: 96px; height: 96px; border-radius: 50%; object-fit: cover;
+  background: radial-gradient(circle at 40% 35%, #A79DFF, #7C6FF0 60%, #5A4CD6); color: #fff; font-size: 40px; font-weight: 600;
+}
+.author-photo.small { width: 40px; height: 40px; font-size: 18px; flex: none; }
+.author { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 0 8px; }
+.author h1 { font-size: 24px; margin-top: 8px; }
+.author p { max-width: 420px; }
+.author .btn { margin-top: 12px; max-width: 340px; }
+.section-title { font-size: 18px; margin: 18px 0 10px; }
