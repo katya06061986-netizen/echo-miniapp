@@ -53,8 +53,8 @@ function addDays(date, n) {
 /** Настроение по дням: [{date, mood}] — с поправкой, если ссылка обновлялась не сегодня */
 function days() {
   const shift = Math.round((Date.parse(todayLocal()) - Date.parse(state.today)) / 864e5);
-  const list = state.days.map((mood, i) => ({ date: addDays(state.today, i - state.days.length + 1), mood, em: state.de?.[i] ?? null }));
-  for (let i = 0; i < shift; i++) list.push({ date: addDays(state.today, i + 1), mood: null, em: null });
+  const list = state.days.map((mood, i) => ({ date: addDays(state.today, i - state.days.length + 1), mood, em: state.de?.[i] ?? null, dd: state.dd?.[i] ?? null }));
+  for (let i = 0; i < shift; i++) list.push({ date: addDays(state.today, i + 1), mood: null, em: null, dd: null });
   return list.slice(-30);
 }
 
@@ -144,11 +144,11 @@ function weekAvatars() {
   const today = todayLocal();
   return `<div class="week-avatars">${days().slice(-7).map((d) => {
     const wd = WEEKDAYS[new Date(d.date + 'T00:00:00Z').getUTCDay()];
-    return `<div class="wa${d.date === today ? ' today' : ''}" title="${esc(dayTitle(d.date))}${d.mood === null ? '' : ': ' + fmt(d.mood)}">
+    return `<button class="wa${d.date === today ? ' today' : ''}" ${d.dd ? `data-day="${d.date}"` : d.date === today ? 'data-action="record"' : 'disabled'} title="${esc(dayTitle(d.date))}${d.mood === null ? '' : ': ' + fmt(d.mood)}">
       <b>${d.mood === null ? '' : fmt(d.mood)}</b>
       <img src="${avatarSrc(d.mood, d.em)}" alt="">
       <span>${wd}</span>
-    </div>`;
+    </button>`;
   }).join('')}</div>`;
 }
 
@@ -169,7 +169,7 @@ function chart(range) {
       out += `<circle class="empty" cx="${cx}" cy="${top + plotH - 3}" r="3"/>`;
     } else {
       const h = Math.max(6, plotH * (d.mood / 10));
-      out += `<rect class="bar" x="${cx - barW / 2}" y="${top + plotH - h}" width="${barW}" height="${h}" rx="${Math.min(8, barW / 2)}" fill="${moodColor(d.mood)}"><title>${esc(dayTitle(d.date))}: ${fmt(d.mood)}</title></rect>`;
+      out += `<rect class="bar" ${d.dd ? `data-day="${d.date}"` : ''} x="${cx - barW / 2}" y="${top + plotH - h}" width="${barW}" height="${h}" rx="${Math.min(8, barW / 2)}" fill="${moodColor(d.mood)}"><title>${esc(dayTitle(d.date))}: ${fmt(d.mood)}</title></rect>`;
     }
     const date = new Date(d.date + 'T00:00:00Z');
     const isToday = d.date === today;
@@ -181,7 +181,7 @@ function chart(range) {
 
 function overview() {
   const week = state.week;
-  const last = state.entries[0];
+  const last = state.ld;
   const filled = days().filter((d) => d.mood !== null).length;
   const heroText = week
     ? `<p class="big">${esc(week.title)}</p><p>${week.trend ? esc(week.trend[0].toUpperCase() + week.trend.slice(1)) + '.' : 'Ещё пара дней — и станет видно, как идёт неделя.'}</p>${state.st && week.avg !== null ? `<p class="note">В среднем ${fmt(week.avg)} из 10</p>` : ''}`
@@ -190,10 +190,10 @@ function overview() {
   return `
     <header class="hello">
       <h1>${greeting()}${state.name ? ', ' + esc(state.name) : ''}</h1>
-      <p>${last ? `Последняя запись — ${dayTitle(last.d).toLowerCase()}` : f('Здесь будет ваш дневник настроения', 'Здесь будет твой дневник настроения')}</p>
+      <p>${last ? `Последняя запись — ${dayTitle(last).toLowerCase()}` : f('Здесь будет ваш дневник настроения', 'Здесь будет твой дневник настроения')}</p>
     </header>
 
-    <section class="card hero">${ring(week?.avg ?? null)}<div class="hero-text">${heroText}</div></section>
+    <section class="card hero"><button class="ring-btn" data-action="record" aria-label="Рассказать, как прошёл день">${ring(week?.avg ?? null)}</button><div class="hero-text">${heroText}<p class="note">${f('Нажмите на аватар, чтобы рассказать, как прошёл день.', 'Нажми на аватар, чтобы рассказать, как прошёл день.')}</p></div></section>
 
     <div class="stats">
       <div class="stat"><b>${state.streak > 0 ? state.streak + ' 🔥' : 0}</b><span>${plural(state.streak, 'день', 'дня', 'дней')} без перерыва</span></div>
@@ -209,12 +209,12 @@ function overview() {
           <button data-range="30" class="${chartRange === 30 ? 'is-active' : ''}">30 дней</button>
         </div>
       </div>
-      ${chart(chartRange)}
+      ${state.total ? chart(chartRange) : emptyState()}
+      ${state.total ? `<p class="note" style="margin:8px 0 0">${f('Нажмите на день, чтобы открыть его запись.', 'Нажми на день, чтобы открыть его запись.')}</p>` : ''}
     </section>
 
     <button class="sos-btn" data-sos>${SOS_LABEL}</button>
-
-    ${recordButton()}`;
+`;
 }
 
 // ---------- «Карта сил» ----------
@@ -309,40 +309,6 @@ function powerMap() {
       ${pm.lift.length ? `<div class="pm-quote" id="pm-quote">${pmQuote(pmSel)}</div>` : ''}
       <p class="note" style="margin:10px 0 0">Это наблюдение, а не правило. Чем больше записей, тем точнее.</p>
     </section>`;
-}
-
-function recordButton() {
-  return `
-    <button class="card cta" data-action="record">
-      ${emblem()}
-      <span><b>Рассказать о дне</b><span>Вернуться в чат и записать голосовое</span></span>
-    </button>`;
-}
-
-function entries() {
-  if (!state.entries.length) {
-    return `<div class="empty-state view">${emblem()}<p>Пока тихо.<br>${f('Расскажите в чате голосом или текстом, как прошёл день, и здесь появится первое эхо.', 'Расскажи в чате голосом или текстом, как прошёл день, и здесь появится первое эхо.')}</p></div>${recordButton()}`;
-  }
-  let html = `<header class="hello"><h1>Записи</h1><p>${'Короткие отрывки последних записей.'}</p></header>${recordButton()}`;
-  let currentDay = '';
-  for (const e of state.entries) {
-    if (e.d !== currentDay) {
-      currentDay = e.d;
-      html += `<div class="day-label">${esc(dayTitle(e.d))}</div>`;
-    }
-    const meta = [e.t, e.s === 'voice' ? '🎙 голосом' : '✍️ текстом'];
-    const tags = e.e.map((x) => `<span class="chip accent">${esc(x)}</span>`);
-    html += `
-      <button class="card entry" data-entry>
-        <span class="mood-badge" style="background:${moodColor(e.m)}">${e.m}</span>
-        <span>
-          <div class="entry-meta">${meta.join(' · ')}</div>
-          ${tags.length ? `<div class="chips">${tags.join('')}</div>` : ''}
-          <div class="entry-text">${esc(e.x)}</div>
-        </span>
-      </button>`;
-  }
-  return html;
 }
 
 function recipe() {
@@ -485,10 +451,45 @@ function settings() {
     </section>`;
 }
 
+/** Пустой дневник: «Пока тихо» */
+function emptyState() {
+  return `<div class="empty-state view">${emblem()}<p>Пока тихо.<br>${f('Расскажите в чате голосом или текстом, как прошёл день, и здесь появится первое эхо.', 'Расскажи в чате голосом или текстом, как прошёл день, и здесь появится первое эхо.')}</p></div>`;
+}
+
+/** Карточка дня: по нажатию на цветок, котика или столбик графика */
+function openDay(date) {
+  const d = days().find((x) => x.date === date);
+  if (!d?.dd) return;
+  closeDay();
+  const sheet = document.createElement('div');
+  sheet.className = 'day-sheet';
+  sheet.innerHTML = `
+    <div class="day-sheet-card" role="dialog" aria-label="${esc(dayTitle(date))}">
+      <div class="day-sheet-head">
+        ${state.st ? `<img src="${avatarSrc(d.mood, d.em)}" alt="">` : ''}
+        <div><h2>${esc(dayTitle(date))}</h2>${d.mood === null ? '' : `<p class="note" style="margin:0">Настроение ${fmt(d.mood)} из 10</p>`}</div>
+      </div>
+      ${d.dd.e.length ? `<div class="chips">${d.dd.e.map((x) => `<span class="chip accent">${esc(x)}</span>`).join('')}</div>` : ''}
+      ${d.dd.q ? `<p class="day-quote">Прозвучало: «${esc(d.dd.q)}»</p>` : ''}
+      <button class="btn" data-fullday="${date}">Вся запись</button>
+      <button class="btn subtle" data-closeday>Закрыть</button>
+    </div>`;
+  document.body.appendChild(sheet);
+  sheet.addEventListener('click', (ev) => {
+    if (ev.target === sheet || ev.target.closest('[data-closeday]')) closeDay();
+    const full = ev.target.closest('[data-fullday]')?.dataset.fullday;
+    if (full) toChat(`day_${full.replace(/-/g, '')}`);
+  });
+}
+
+function closeDay() {
+  document.querySelector('.day-sheet')?.remove();
+}
+
 // ---------- отрисовка и события ----------
 
 function render() {
-  const views = { overview, entries, recipe, feedback, more, settings };
+  const views = { overview, recipe, feedback, more, settings };
   app.innerHTML = `<div class="view">${views[tab]()}</div>`;
   for (const b of tabsEl.querySelectorAll('.tab')) b.classList.toggle('is-active', b.dataset.tab === tab);
 }
@@ -518,9 +519,10 @@ app.addEventListener('click', (ev) => {
     document.getElementById('pm-quote').innerHTML = pmQuote(pmSel);
     return;
   }
-  const entry = ev.target.closest('[data-entry]');
-  if (entry) {
-    entry.classList.toggle('is-open');
+  const day = ev.target.closest('[data-day]')?.dataset.day;
+  if (day) {
+    haptic('light');
+    openDay(day);
     return;
   }
   const action = ev.target.closest('[data-action]')?.dataset.action;
