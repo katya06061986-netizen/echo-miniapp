@@ -270,10 +270,13 @@ function powerMap() {
     const [cx, cy] = PM_C;
     const seen = (pm.seen || []).map((it, i, all) => {
       const a = ((i * 360) / Math.max(all.length, 1) - 90) * Math.PI / 180;
-      const x = Math.round(cx + 96 * Math.cos(a)), y = Math.round(cy + 96 * Math.sin(a));
-      return `<g class="pm-seed"><circle cx="${x}" cy="${y}" r="11" fill="#A79DFF" opacity=".28"/>
+      // ближе к Эхо — то, что чаще в светлых днях; крупнее — то, что звучит чаще
+      const r = 96 - (it.k || 0) * 30;
+      const x = Math.round(cx + r * Math.cos(a)), y = Math.round(cy + r * Math.sin(a));
+      const size = 8 + Math.min(it.n || 1, 5) * 2;
+      return `<g class="pm-seed"><circle cx="${x}" cy="${y}" r="${size}" fill="#A79DFF" opacity=".28"/>
         <text x="${x}" y="${y + 4}" text-anchor="middle" font-size="10" opacity=".7">${it.e}</text>
-        <text x="${x}" y="${y + 25}" text-anchor="middle" font-size="11" fill="currentColor" opacity=".55">${esc(it.l)}</text></g>`;
+        <text x="${x}" y="${y + size + 14}" text-anchor="middle" font-size="11" fill="currentColor" opacity=".55">${esc(it.l)}</text></g>`;
     }).join('');
     const names = (pm.seen || []).slice(0, 3).map((it) => it.l).join(', ');
     return `<section class="card">${head}
@@ -281,7 +284,7 @@ function powerMap() {
         ${pmBase()}
         ${seen}
       </svg>
-      <p class="note" style="margin:6px 0 0">Карта собирается: ${pm.days} из 7 дней.${names ? ` Уже прозвучало: ${esc(names)}.` : ''}</p>
+      <p class="note" style="margin:6px 0 0">Карта собирается: ${pm.days} из 7 дней.${names ? ` Уже прозвучало: ${esc(names)}.` : ''}${pm.days >= 3 ? ' Пока это первые наблюдения.' : ''}</p>
     </section>`;
   }
   if (!pm.lift.length && !pm.drain.length) {
