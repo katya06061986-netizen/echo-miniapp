@@ -204,14 +204,14 @@ function overview() {
     <section class="card hero">${ring(week?.avg ?? null)}<div class="hero-text">${heroText}</div></section>
 
     <div class="stats">
-      <div class="stat"><b>${state.streak > 0 ? state.streak + ' 🔥' : 0}</b><span>${plural(state.streak, 'день', 'дня', 'дней')} подряд</span></div>
+      <div class="stat"><b>${state.streak > 0 ? state.streak + ' 🔥' : 0}</b><span>${plural(state.streak, 'день', 'дня', 'дней')} без перерыва</span></div>
       <div class="stat"><b>${state.total}</b><span>${plural(state.total, 'запись', 'записи', 'записей')}</span></div>
       <div class="stat"><b>${filled}</b><span>${plural(filled, 'день', 'дня', 'дней')} за месяц</span></div>
     </div>
 
     <section class="card">
       <div class="card-head">
-        <h2>Настроение</h2>
+        <h2>Как звучали дни</h2>
         <div class="seg" role="tablist">
           <button data-range="7" class="${chartRange === 7 ? 'is-active' : ''}">7 дней</button>
           <button data-range="30" class="${chartRange === 30 ? 'is-active' : ''}">30 дней</button>
@@ -309,7 +309,7 @@ function recordButton() {
 
 function entries() {
   if (!state.entries.length) {
-    return `<div class="empty-state view">${emblem()}<p>Пока ни одной записи.<br>${f('Расскажите в чате голосом или текстом, как прошёл день.', 'Расскажи в чате голосом или текстом, как прошёл день.')}</p></div>${recordButton()}`;
+    return `<div class="empty-state view">${emblem()}<p>Пока тихо.<br>${f('Расскажите в чате голосом или текстом, как прошёл день, и здесь появится первое эхо.', 'Расскажи в чате голосом или текстом, как прошёл день, и здесь появится первое эхо.')}</p></div>${recordButton()}`;
   }
   let html = `<header class="hello"><h1>Записи</h1><p>${'Короткие отрывки последних записей.'}</p></header>${recordButton()}`;
   let currentDay = '';
@@ -399,7 +399,7 @@ function more() {
 
     <section class="card">
       <h2>Письмо себе</h2>
-      <p class="note" style="margin:0 0 12px">${f('О том, как вы сейчас: что тревожит, о чём мечтается. Через месяц Эхо вернёт его вам.', 'О том, как ты сейчас: что тревожит, о чём мечтается. Через месяц Эхо вернёт его тебе.')}</p>
+      <p class="note" style="margin:0 0 12px">${f('О том, как вы сейчас: что тревожит, о чём мечтается. Через месяц письмо вернётся к вам эхом.', 'О том, как ты сейчас: что тревожит, о чём мечтается. Через месяц письмо вернётся к тебе эхом.')}</p>
       <button class="btn" data-action="letter">✉️ Написать письмо</button>
     </section>`;
 }
