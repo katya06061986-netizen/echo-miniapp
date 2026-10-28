@@ -329,6 +329,10 @@ function more() {
         <div>Время</div>
         <select id="morning-hour">${mHours}</select>
       </div>
+      <div class="row">
+        <div><div>Минутка для себя</div><p>Короткая практика после тревожных или усталых записей</p></div>
+        <label class="switch"><input type="checkbox" id="practices-on" ${state.pr !== false ? 'checked' : ''} aria-label="Минутка для себя"><span></span></label>
+      </div>
       <button class="btn subtle" data-action="tz">Часовой пояс</button>
     </section>
 
@@ -386,6 +390,10 @@ app.addEventListener('change', (ev) => {
   if (ev.target.id === 'morning-on' || ev.target.id === 'morning-hour') {
     const on = document.getElementById('morning-on').checked;
     toChat(on ? `morning_${document.getElementById('morning-hour').value}` : 'morning_off');
+    return;
+  }
+  if (ev.target.id === 'practices-on') {
+    toChat(ev.target.checked ? 'practices_on' : 'practices_off');
     return;
   }
   if (ev.target.id !== 'remind-on' && ev.target.id !== 'remind-hour') return;

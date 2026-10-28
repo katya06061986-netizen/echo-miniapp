@@ -253,3 +253,25 @@ textarea { width: 100%; min-height: 110px; resize: vertical; margin-bottom: 12px
 .tab svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .tab svg circle { fill: currentColor; stroke: none; }
 .tab.is-active { color: var(--accent); }
+
+/* «Минутка для себя» (practice.html): круг дышит вместе с человеком */
+.practice { min-height: 100vh; display: flex; align-items: center; padding-bottom: 20px; }
+.practice-card { width: 100%; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 18px; }
+.practice-card h1 { font-size: 24px; font-weight: 650; letter-spacing: -0.02em; }
+.practice-card p { color: var(--text-2); max-width: 340px; }
+.practice-card .btn { max-width: 340px; }
+.practice-card .btn.subtle { margin-top: 0; }
+.orb {
+  width: 180px; height: 180px; margin: 12px 0; border-radius: 50%;
+  background: radial-gradient(circle at 50% 40%, var(--chip-text), var(--accent));
+  box-shadow: 0 0 60px var(--glow);
+  transform: scale(0.6); animation: breathe 4s ease-in-out infinite;
+}
+.orb.in { animation: grow var(--sec) ease-in-out forwards; }
+.orb.out { animation: shrink var(--sec) ease-in-out forwards; }
+.orb.hold { transform: scale(1); animation: none; }
+@keyframes grow { from { transform: scale(0.6); } to { transform: scale(1); } }
+@keyframes shrink { from { transform: scale(1); } to { transform: scale(0.6); } }
+.phase { font-size: 20px; font-weight: 600; min-height: 28px; }
+.big-num { font-size: 96px; font-weight: 700; line-height: 1; color: var(--accent); margin-top: 24px; }
+@media (prefers-reduced-motion: reduce) { .orb, .orb.in, .orb.out { animation: none; } }
