@@ -413,3 +413,7 @@ textarea { width: 100%; min-height: 110px; resize: vertical; margin-bottom: 12px
 
 .read-sections { margin: 0 0 14px; }
 .read-sections .chip { text-decoration: none; padding: 7px 12px; font-size: 14px; }
+/* Отзвуки хорошего на графике и в карточке дня */
+.good-mark { font-style: normal; font-size: 11px; margin-left: 2px; cursor: pointer; }
+.chart .good-mark { font-size: 12px; }
+.day-good p { font-style: normal; }

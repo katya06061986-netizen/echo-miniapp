@@ -53,8 +53,8 @@ function addDays(date, n) {
 /** Настроение по дням: [{date, mood}] — с поправкой, если ссылка обновлялась не сегодня */
 function days() {
   const shift = Math.round((Date.parse(todayLocal()) - Date.parse(state.today)) / 864e5);
-  const list = state.days.map((mood, i) => ({ date: addDays(state.today, i - state.days.length + 1), mood, em: state.de?.[i] ?? null, dd: state.dd?.[i] ?? null }));
-  for (let i = 0; i < shift; i++) list.push({ date: addDays(state.today, i + 1), mood: null, em: null, dd: null });
+  const list = state.days.map((mood, i) => ({ date: addDays(state.today, i - state.days.length + 1), mood, em: state.de?.[i] ?? null, dd: state.dd?.[i] ?? null, gd: state.gd?.[i] ?? null }));
+  for (let i = 0; i < shift; i++) list.push({ date: addDays(state.today, i + 1), mood: null, em: null, dd: null, gd: null });
   return list.slice(-30);
 }
 
@@ -150,8 +150,8 @@ function weekAvatars() {
   const today = todayLocal();
   return `<div class="week-avatars">${days().slice(-7).map((d) => {
     const wd = WEEKDAYS[new Date(d.date + 'T00:00:00Z').getUTCDay()];
-    return `<button class="wa${d.date === today ? ' today' : ''}" ${d.dd ? `data-day="${d.date}"` : d.date === today ? 'data-action="record"' : 'disabled'} title="${esc(dayTitle(d.date))}${d.mood === null ? '' : ': ' + fmt(d.mood)}">
-      <b>${d.mood === null ? '' : fmt(d.mood)}</b>
+    return `<button class="wa${d.date === today ? ' today' : ''}" ${d.dd || d.gd ? `data-day="${d.date}"` : d.date === today ? 'data-action="record"' : 'disabled'} title="${esc(dayTitle(d.date))}${d.mood === null ? '' : ': ' + fmt(d.mood)}">
+      <b>${d.mood === null ? '' : fmt(d.mood)}${d.gd ? '<i class="good-mark">🌼</i>' : ''}</b>
       <img src="${avatarSrc(d.mood, d.em)}" alt="">
       <span>${wd}</span>
     </button>`;
@@ -171,10 +171,12 @@ function chart(range) {
   for (const g of [5, 10]) out += `<line class="grid" x1="0" x2="${W}" y1="${y(g)}" y2="${y(g)}"/>`;
   list.forEach((d, i) => {
     const cx = step * i + step / 2;
+    // Отзвук хорошего — цветок над днём; нажатие открывает карточку дня, даже без записи
+    const h = d.mood === null ? 6 : Math.max(6, plotH * (d.mood / 10));
+    if (d.gd) out += `<text class="good-mark" data-day="${d.date}" x="${cx}" y="${top + plotH - h - 4}" text-anchor="middle">🌼</text>`;
     if (d.mood === null) {
       out += `<circle class="empty" cx="${cx}" cy="${top + plotH - 3}" r="3"/>`;
     } else {
-      const h = Math.max(6, plotH * (d.mood / 10));
       out += `<rect class="bar" ${d.dd ? `data-day="${d.date}"` : ''} x="${cx - barW / 2}" y="${top + plotH - h}" width="${barW}" height="${h}" rx="${Math.min(8, barW / 2)}" fill="${moodColor(d.mood)}"><title>${esc(dayTitle(d.date))}: ${fmt(d.mood)}</title></rect>`;
     }
     const date = new Date(d.date + 'T00:00:00Z');
@@ -480,7 +482,7 @@ function emptyState() {
 /** Карточка дня: по нажатию на цветок, котика или столбик графика */
 function openDay(date) {
   const d = days().find((x) => x.date === date);
-  if (!d?.dd) return;
+  if (!d?.dd && !d?.gd) return;
   closeDay();
   const sheet = document.createElement('div');
   sheet.className = 'day-sheet';
@@ -490,9 +492,10 @@ function openDay(date) {
         ${state.st ? `<img src="${avatarSrc(d.mood, d.em)}" alt="">` : ''}
         <div><h2>${esc(dayTitle(date))}</h2>${d.mood === null ? '' : `<p class="note" style="margin:0">Настроение ${fmt(d.mood)} из 10</p>`}</div>
       </div>
-      ${d.dd.e.length ? `<div class="chips">${d.dd.e.map((x) => `<span class="chip accent">${esc(x)}</span>`).join('')}</div>` : ''}
-      ${d.dd.q?.length ? `<div class="day-quote"><span>Прозвучало:</span>${d.dd.q.map((q) => `<p>«${esc(q)}»</p>`).join('')}</div>` : ''}
-      <button class="btn" data-fullday="${date}">Вся запись</button>
+      ${d.dd?.e.length ? `<div class="chips">${d.dd.e.map((x) => `<span class="chip accent">${esc(x)}</span>`).join('')}</div>` : ''}
+      ${d.dd?.q?.length ? `<div class="day-quote"><span>Прозвучало:</span>${d.dd.q.map((q) => `<p>«${esc(q)}»</p>`).join('')}</div>` : ''}
+      ${d.gd?.length ? `<div class="day-quote day-good"><span>🌼 Отзвуки хорошего:</span><p>${d.gd.map(esc).join(' · ')}</p></div>` : ''}
+      ${d.dd ? `<button class="btn" data-fullday="${date}">Вся запись</button>` : ''}
       <button class="btn subtle" data-closeday>Закрыть</button>
     </div>`;
   document.body.appendChild(sheet);
