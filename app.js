@@ -270,9 +270,10 @@ function powerMap() {
       const r = 96 - (it.k || 0) * 30;
       const x = Math.round(cx + r * Math.cos(a)), y = Math.round(cy + r * Math.sin(a));
       const size = 8 + Math.min(it.n || 1, 5) * 2;
-      return `<g class="pm-seed"><circle cx="${x}" cy="${y}" r="${size}" fill="#A79DFF" opacity=".28"/>
-        <text x="${x}" y="${y + 4}" text-anchor="middle" font-size="10" opacity=".7">${it.e}</text>
-        <text x="${x}" y="${y + size + 14}" text-anchor="middle" font-size="11" fill="currentColor" opacity=".55">${esc(it.l)}</text></g>`;
+      // Из отзвуков хорошего — ярче и тёплым цветом: человек сам отметил это как хорошее
+      return `<g class="pm-seed"><circle cx="${x}" cy="${y}" r="${size}" fill="${it.g ? '#F6D365' : '#A79DFF'}" opacity="${it.g ? '.45' : '.28'}"/>
+        <text x="${x}" y="${y + 4}" text-anchor="middle" font-size="10" opacity="${it.g ? '1' : '.7'}">${it.e}</text>
+        <text x="${x}" y="${y + size + 14}" text-anchor="middle" font-size="11" fill="currentColor" opacity="${it.g ? '.85' : '.55'}">${esc(it.l)}</text></g>`;
     }).join('');
     const names = (pm.seen || []).slice(0, 3).map((it) => it.l).join(', ');
     return `<section class="card">${head}
