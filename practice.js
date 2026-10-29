@@ -126,7 +126,7 @@ function step(i) {
     <section class="practice-card">
       <h1>${practice.title}</h1>
       <div class="big-num">${n}</div>
-      <div class="phase">${what}</div>
+      ${what.length > 40 ? `<p class="phase-text">${what}</p>` : `<div class="phase">${what}</div>`}
       <button class="btn" id="next">Дальше</button>
     </section>`;
   document.getElementById('next').onclick = () => step(i + 1);

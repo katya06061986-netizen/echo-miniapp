@@ -281,6 +281,8 @@ textarea { width: 100%; min-height: 110px; resize: vertical; margin-bottom: 12px
 @keyframes grow { from { transform: scale(0.6); } to { transform: scale(1); } }
 @keyframes shrink { from { transform: scale(1); } to { transform: scale(0.6); } }
 .phase { font-size: 20px; font-weight: 600; min-height: 28px; }
+/* Шаг-фраза (бережная пауза) — обычным текстом, а не крупной подписью */
+.phase-text { font-size: 17px; line-height: 1.45; margin: 8px 0 16px; }
 .big-num { font-size: 96px; font-weight: 700; line-height: 1; color: var(--accent); margin-top: 24px; }
 /* Эмблема Эхо вместо круга: волна «поёт», от ядра расходится мягкая волна-пульс */
 .orb { position: relative; background: none; box-shadow: none; }
