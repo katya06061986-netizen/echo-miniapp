@@ -371,6 +371,16 @@ function more() {
     </section>
 
     <section class="card">
+      <h2>Разобрать трудное</h2>
+      <p class="note" style="margin:0 0 12px">Когда что-то тяжело — чтобы посмотреть на это бережно. Проверка мысли и «Что в моих силах» идут в чате, можно голосом.</p>
+      <div class="practices">
+        <button class="practice-btn" data-practice="kind"><span>🫶</span>Бережная пауза</button>
+        <button class="practice-btn" data-action="rf_thought"><span>🔍</span>Проверка мысли</button>
+        <button class="practice-btn" data-action="rf_control"><span>⚖️</span>Что в моих силах</button>
+      </div>
+    </section>
+
+    <section class="card">
       <h2>${SOS_LABEL}</h2>
       <p class="note" style="margin:0 0 12px">Если накрыло тревогой или страхом — пара минут, чтобы переждать.</p>
       <button class="btn" data-sos>Открыть</button>
@@ -579,7 +589,7 @@ app.addEventListener('click', (ev) => {
     location.href = `practice.html?p=${practice}&a=${state.addr}&from=app&b=${encodeURIComponent(BOT)}&v=${VERSION}`;
     return;
   }
-  if (['record', 'feedback', 'delete', 'tz', 'letter', 'theme', 'good', 'stats', 'name', 'metrics'].includes(action)) {
+  if (['record', 'feedback', 'delete', 'tz', 'letter', 'theme', 'good', 'stats', 'name', 'metrics', 'rf_thought', 'rf_control'].includes(action)) {
     toChat(action);
   }
 });
