@@ -562,7 +562,7 @@ app.addEventListener('click', (ev) => {
   }
   if (ev.target.closest('[data-read]')) {
     haptic('light');
-    location.href = `read.html?v=${VERSION}`;
+    location.href = `read.html?v=${VERSION}&b=${encodeURIComponent(BOT)}`;
     return;
   }
   if (ev.target.closest('[data-sounds]')) {

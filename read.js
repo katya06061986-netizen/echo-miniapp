@@ -10,6 +10,9 @@ const tg = window.Telegram?.WebApp;
 const app = document.getElementById('app');
 const params = new URLSearchParams(location.search);
 const version = (document.currentScript?.src.split('?')[1]) || '';
+/** Бот — чтобы отзыв о статье вернулся в чат */
+const BOT = params.get('b') || '';
+const keep = () => `${version ? `&${version}` : ''}${BOT ? `&b=${encodeURIComponent(BOT)}` : ''}`;
 
 /** В конце каждой статьи: мнение автора и куда обратиться, если очень тяжело */
 const FOOTER = `
@@ -37,19 +40,21 @@ function applyTheme() {
 }
 
 /** Фото автора или первая буква имени в круге */
-function avatar(author, cls = 'author-photo') {
+function avatar(author, cls = 'author-photo', id = '') {
+  // У редакции Эхо вместо фото — эмблема
+  if (!author.photo && id === 'echo' && window.echoEmblem) return window.echoEmblem(`${cls} emblem-avatar`);
   return author.photo
     ? `<img class="${cls}" src="authors/${esc(author.photo)}" alt="">`
     : `<span class="${cls}">${esc(author.name[0])}</span>`;
 }
 
 function authorChip(id, author) {
-  return `<a class="author-chip" href="read.html?author=${encodeURIComponent(id)}&${version}">${avatar(author, 'author-photo small')}<span><b>${esc(author.name)}</b>${esc(author.role)}</span></a>`;
+  return `<a class="author-chip" href="read.html?author=${encodeURIComponent(id)}${keep()}">${avatar(author, 'author-photo small', id)}<span><b>${esc(author.name)}</b>${esc(author.role)}</span></a>`;
 }
 
 function articleCard(a, lib) {
   return `
-    <a class="card article-card" href="read.html?a=${encodeURIComponent(a.id)}&${version}">
+    <a class="card article-card" href="read.html?a=${encodeURIComponent(a.id)}${keep()}">
       <h2>${esc(a.title)}</h2>
       <p>${esc(a.lead)}</p>
       <p class="note">${esc(lib.authors[a.author].name)} · ${a.min} мин</p>
@@ -59,7 +64,8 @@ function articleCard(a, lib) {
 function list(lib) {
   return `
     <header class="hello"><h1>Почитать</h1><p>Короткие статьи психологов о том, как бережно относиться к себе</p></header>
-    ${lib.articles.length ? lib.articles.map((a) => articleCard(a, lib)).join('') : '<section class="card"><p>Скоро здесь появятся первые статьи.</p></section>'}`;
+    ${lib.articles.length ? lib.articles.map((a) => articleCard(a, lib)).join('') : '<section class="card"><p>Скоро здесь появятся первые статьи.</p></section>'}
+    ${BOT ? '<button class="btn subtle" data-suggest>💡 О чём хотелось бы прочитать?</button>' : ''}`;
 }
 
 function article(lib, id) {
@@ -71,6 +77,11 @@ function article(lib, id) {
       <p class="note">${dateText(a.date)} · ${a.min} мин</p>
       ${authorChip(a.author, lib.authors[a.author])}
       <div class="article-body">${a.html}</div>
+      ${BOT ? `<section class="article-feedback">
+        <p>Было полезно?</p>
+        <button class="btn" data-af="yes">Да</button>
+        <button class="btn subtle" data-af="no">Не очень</button>
+      </section>` : ''}
       <hr>
       ${FOOTER}
     </article>`;
@@ -82,7 +93,7 @@ function authorPage(lib, id) {
   const own = lib.articles.filter((a) => a.author === id);
   return `
     <section class="author">
-      ${avatar(au)}
+      ${avatar(au, 'author-photo', author)}
       <h1>${esc(au.name)}</h1>
       <p class="note">${esc(au.role)}</p>
       <p>${esc(au.about)}</p>
@@ -114,6 +125,20 @@ async function start() {
   if (contact) contact.onclick = () => openExternal(lib.authors[author].link);
   // ссылки внутри статьи — во внешнем браузере, чтобы не уводить из «Эхо»
   app.addEventListener('click', (ev) => {
+    if (ev.target.closest('[data-suggest]')) {
+      const link = `https://t.me/${BOT}?start=suggest`;
+      if (tg) safe(() => tg.openTelegramLink(link), () => tg.close());
+      else location.href = link;
+      return;
+    }
+    const af = ev.target.closest('[data-af]')?.dataset.af;
+    if (af && id) {
+      // Отзыв о статье — в чат (и в статистику)
+      const link = `https://t.me/${BOT}?start=af_${id}_${af}`;
+      if (tg) safe(() => tg.openTelegramLink(link), () => tg.close());
+      else location.href = link;
+      return;
+    }
     const link = ev.target.closest('.article-body a');
     if (!link) return;
     ev.preventDefault();
