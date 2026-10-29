@@ -125,6 +125,7 @@ const PRACTICES = [
   ['grounding', '🖐', '5-4-3-2-1'],
   ['shoulders', '💆', 'Опустить плечи'],
   ['silence', '🍃', 'Пауза в тишине'],
+  ['kind', '🫶', 'Бережная пауза'],
 ];
 
 // ---------- экраны ----------
@@ -205,7 +206,7 @@ function overview() {
     <div class="stats">
       <div class="stat"><b>${state.streak > 0 ? state.streak + ' 🔥' : 0}</b><span>${plural(state.streak, 'день', 'дня', 'дней')} без перерыва</span></div>
       <button class="stat stat-action" data-action="good"><b>🌼</b><span>Отзвуки хорошего</span></button>
-      <button class="stat stat-action" data-action="letter"><b>✉️</b><span>Письмо себе</span></button>
+      <button class="stat stat-action" data-hard><b>🌧</b><span>Разобрать трудное</span></button>
     </div>
 
     <section class="card">
@@ -371,13 +372,9 @@ function more() {
     </section>
 
     <section class="card">
-      <h2>Разобрать трудное</h2>
-      <p class="note" style="margin:0 0 12px">Когда что-то тяжело — чтобы посмотреть на это бережно. Проверка мысли и «Что в моих силах» идут в чате, можно голосом.</p>
-      <div class="practices">
-        <button class="practice-btn" data-practice="kind"><span>🫶</span>Бережная пауза</button>
-        <button class="practice-btn" data-action="rf_thought"><span>🔍</span>Проверка мысли</button>
-        <button class="practice-btn" data-action="rf_control"><span>⚖️</span>Что в моих силах</button>
-      </div>
+      <h2>✉️ Письмо себе</h2>
+      <p class="note" style="margin:0 0 12px">Через месяц оно вернётся к ${f('вам', 'тебе')} эхом.</p>
+      <button class="btn" data-action="letter">Написать</button>
     </section>
 
     <section class="card">
@@ -518,6 +515,29 @@ function openDay(date) {
   });
 }
 
+/** «Разобрать трудное»: выбор из двух практик в чате */
+function openHard() {
+  closeDay();
+  const sheet = document.createElement('div');
+  sheet.className = 'day-sheet';
+  sheet.innerHTML = `
+    <div class="day-sheet-card" role="dialog" aria-label="Разобрать трудное">
+      <h2>Разобрать трудное</h2>
+      <p class="note">${f('Когда на душе тяжело — давайте разберёмся вместе, по шагам.', 'Когда на душе тяжело — давай разберёмся вместе, по шагам.')}</p>
+      <div class="practices">
+        <button class="practice-btn" data-rf="rf_thought"><span>🔍</span>Проверка мысли</button>
+        <button class="practice-btn" data-rf="rf_control"><span>⚖️</span>Что в моих силах</button>
+      </div>
+      <button class="btn subtle" data-closeday>Закрыть</button>
+    </div>`;
+  document.body.appendChild(sheet);
+  sheet.addEventListener('click', (ev) => {
+    if (ev.target === sheet || ev.target.closest('[data-closeday]')) closeDay();
+    const rf = ev.target.closest('[data-rf]')?.dataset.rf;
+    if (rf) toChat(rf);
+  });
+}
+
 function closeDay() {
   document.querySelector('.day-sheet')?.remove();
 }
@@ -570,6 +590,11 @@ app.addEventListener('click', (ev) => {
     toChat(`style_${style}`);
     return;
   }
+  if (ev.target.closest('[data-hard]')) {
+    haptic('light');
+    openHard();
+    return;
+  }
   if (ev.target.closest('[data-sos]')) {
     haptic('medium');
     location.href = `sos.html?a=${state.addr}&v=${VERSION}`;
@@ -590,7 +615,7 @@ app.addEventListener('click', (ev) => {
     location.href = `practice.html?p=${practice}&a=${state.addr}&from=app&b=${encodeURIComponent(BOT)}&v=${VERSION}`;
     return;
   }
-  if (['record', 'feedback', 'delete', 'tz', 'letter', 'theme', 'good', 'stats', 'name', 'metrics', 'rf_thought', 'rf_control'].includes(action)) {
+  if (['record', 'feedback', 'delete', 'tz', 'letter', 'theme', 'good', 'stats', 'name', 'metrics'].includes(action)) {
     toChat(action);
   }
 });
