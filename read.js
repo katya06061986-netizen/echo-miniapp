@@ -61,10 +61,21 @@ function articleCard(a, lib) {
     </a>`;
 }
 
+/** Разделы для быстрого поиска по темам — когда их хотя бы два */
+function sections(lib, current) {
+  const names = [...new Set(lib.articles.map((a) => a.section))];
+  if (names.length < 2) return '';
+  const chip = (name, label) => `<a class="chip${current === name ? ' accent' : ''}" href="read.html?${name ? `s=${encodeURIComponent(name)}` : ''}${keep()}">${esc(label)}</a>`;
+  return `<div class="chips read-sections">${chip('', 'Все')}${names.map((n) => chip(n, n)).join('')}</div>`;
+}
+
 function list(lib) {
+  const current = params.get('s') || '';
+  const shown = current ? lib.articles.filter((a) => a.section === current) : lib.articles;
   return `
-    <header class="hello"><h1>Почитать</h1><p>Короткие статьи психологов о том, как бережно относиться к себе</p></header>
-    ${lib.articles.length ? lib.articles.map((a) => articleCard(a, lib)).join('') : '<section class="card"><p>Скоро здесь появятся первые статьи.</p></section>'}
+    <header class="hello"><h1>Почитать</h1><p>Короткие статьи о том, как бережно относиться к себе</p></header>
+    ${sections(lib, current)}
+    ${shown.length ? shown.map((a) => articleCard(a, lib)).join('') : '<section class="card"><p>Скоро здесь появятся первые статьи.</p></section>'}
     ${BOT ? '<button class="btn subtle" data-suggest>💡 О чём хотелось бы прочитать?</button>' : ''}`;
 }
 

@@ -408,3 +408,6 @@ textarea { width: 100%; min-height: 110px; resize: vertical; margin-bottom: 12px
 .article-feedback .btn { margin-top: 8px; }
 .emblem-avatar { display: inline-block; border-radius: 50%; }
 .emblem-avatar svg { width: 100%; height: 100%; display: block; }
+
+.read-sections { margin: 0 0 14px; }
+.read-sections .chip { text-decoration: none; padding: 7px 12px; font-size: 14px; }
