@@ -572,7 +572,7 @@ app.addEventListener('click', (ev) => {
   }
   if (practice) {
     haptic('light');
-    location.href = `practice.html?p=${practice}&a=${state.addr}&from=app&v=${VERSION}`;
+    location.href = `practice.html?p=${practice}&a=${state.addr}&from=app&b=${encodeURIComponent(BOT)}&v=${VERSION}`;
     return;
   }
   if (['record', 'feedback', 'delete', 'tz', 'letter', 'theme', 'good', 'stats', 'name', 'metrics'].includes(action)) {

@@ -125,15 +125,30 @@ function step(i) {
 function done() {
   safe(() => tg.HapticFeedback.notificationOccurred('success'));
   window.EchoSound?.stop(4);
+  // Отклик: помогла ли практика — ответ уходит в чат (и в статистику), «Эхо» закрывается
+  const bot = params.get('b');
   app.innerHTML = `
     <section class="practice-card">
       <h1>Готово 🌿</h1>
+      <p>Стало хоть немного легче?</p>
       <div class="orb">${orbEmblem()}</div>
-      <button class="btn" id="again">Ещё раз</button>
-      <button class="btn subtle" id="close">${fromApp ? 'Назад' : 'Вернуться в чат'}</button>
+      ${bot ? `<button class="btn" data-pf="yes">Да, легче</button>
+      <button class="btn subtle" data-pf="no">Не особо</button>` : ''}
+      <button class="btn subtle" id="again">Ещё раз</button>
+      ${bot ? '' : `<button class="btn subtle" id="close">${fromApp ? 'Назад' : 'Вернуться в чат'}</button>`}
     </section>`;
   document.getElementById('again').onclick = intro;
-  document.getElementById('close').onclick = () => (fromApp || !tg ? history.back() : tg.close());
+  document.getElementById('close')?.addEventListener('click', () => (fromApp || !tg ? history.back() : tg.close()));
+  for (const btn of app.querySelectorAll('[data-pf]')) {
+    btn.onclick = () => {
+      const link = `https://t.me/${bot}?start=pf_${id}_${btn.dataset.pf}`;
+      if (tg) {
+        safe(() => tg.openTelegramLink(link), () => tg.close());
+      } else {
+        location.href = link;
+      }
+    };
+  }
 }
 
 // ——— Фоновый звук под практику: по умолчанию без звука, выбор запоминается ———
