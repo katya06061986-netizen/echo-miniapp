@@ -52,12 +52,24 @@ function authorChip(id, author) {
   return `<a class="author-chip" href="read.html?author=${encodeURIComponent(id)}${keep()}">${avatar(author, 'author-photo small', id)}<span><b>${esc(author.name)}</b>${esc(author.role)}</span></a>`;
 }
 
-function articleCard(a, lib) {
+/** Прочитанные статьи — только на устройстве (localStorage), на сервер не уходят */
+const READ_KEY = 'echo_read_articles';
+function readIds() {
+  try { return new Set(JSON.parse(localStorage.getItem(READ_KEY) || '[]')); } catch { return new Set(); }
+}
+function markRead(id) {
+  const ids = readIds();
+  if (ids.has(id)) return;
+  ids.add(id);
+  try { localStorage.setItem(READ_KEY, JSON.stringify([...ids])); } catch { /* хранилище недоступно */ }
+}
+
+function articleCard(a, lib, read = false) {
   return `
-    <a class="card article-card" href="read.html?a=${encodeURIComponent(a.id)}${keep()}">
+    <a class="card article-card${read ? ' read' : ''}" href="read.html?a=${encodeURIComponent(a.id)}${keep()}">
       <h2>${esc(a.title)}</h2>
       <p>${esc(a.lead)}</p>
-      <p class="note">${esc(lib.authors[a.author].name)} · ${a.min} мин</p>
+      <p class="note">${esc(lib.authors[a.author].name)} · ${a.min} мин${read ? ' · ✓ прочитано' : ''}</p>
     </a>`;
 }
 
@@ -72,10 +84,19 @@ function sections(lib, current) {
 function list(lib) {
   const current = params.get('s') || '';
   const shown = current ? lib.articles.filter((a) => a.section === current) : lib.articles;
+  // Прочитанные прячутся вниз, под кнопку — их всегда можно найти
+  const done = readIds();
+  const fresh = shown.filter((a) => !done.has(a.id));
+  const read = shown.filter((a) => done.has(a.id));
+  const empty = shown.length
+    ? '<section class="card"><p>Всё прочитано 🌿 Новые статьи скоро появятся.</p></section>'
+    : '<section class="card"><p>Скоро здесь появятся первые статьи.</p></section>';
   return `
     <header class="hello"><h1>Почитать</h1><p>Короткие статьи о том, как бережно относиться к себе</p></header>
     ${sections(lib, current)}
-    ${shown.length ? shown.map((a) => articleCard(a, lib)).join('') : '<section class="card"><p>Скоро здесь появятся первые статьи.</p></section>'}
+    ${fresh.length ? fresh.map((a) => articleCard(a, lib)).join('') : empty}
+    ${read.length ? `<button class="btn subtle" data-read-toggle>📚 Прочитанные (${read.length})</button>
+    <div class="read-list" hidden>${read.map((a) => articleCard(a, lib, true)).join('')}</div>` : ''}
     ${BOT ? '<button class="btn subtle" data-suggest>💡 О чём хотелось бы прочитать?</button>' : ''}`;
 }
 
@@ -104,7 +125,7 @@ function authorPage(lib, id) {
   const own = lib.articles.filter((a) => a.author === id);
   return `
     <section class="author">
-      ${avatar(au, 'author-photo', author)}
+      ${avatar(au, 'author-photo', id)}
       <h1>${esc(au.name)}</h1>
       <p class="note">${esc(au.role)}</p>
       <p>${esc(au.about)}</p>
@@ -132,10 +153,25 @@ async function start() {
   }
   const id = params.get('a'), author = params.get('author');
   app.innerHTML = `<div class="view">${id ? article(lib, id) : author ? authorPage(lib, author) : list(lib)}</div>`;
+  // Дочитал до конца — статья уходит в «Прочитанные»
+  const end = app.querySelector('.article hr');
+  if (id && end && 'IntersectionObserver' in window) {
+    const seen = new IntersectionObserver((items) => {
+      if (items.some((i) => i.isIntersecting)) { markRead(id); seen.disconnect(); }
+    });
+    seen.observe(end);
+  }
   const contact = document.getElementById('contact');
   if (contact) contact.onclick = () => openExternal(lib.authors[author].link);
   // ссылки внутри статьи — во внешнем браузере, чтобы не уводить из «Эхо»
   app.addEventListener('click', (ev) => {
+    const toggle = ev.target.closest('[data-read-toggle]');
+    if (toggle) {
+      const box = app.querySelector('.read-list');
+      box.hidden = !box.hidden;
+      toggle.textContent = box.hidden ? `📚 Прочитанные (${box.children.length})` : 'Скрыть прочитанные';
+      return;
+    }
     if (ev.target.closest('[data-suggest]')) {
       const link = `https://t.me/${BOT}?start=suggest`;
       if (tg) safe(() => tg.openTelegramLink(link), () => tg.close());
@@ -144,6 +180,7 @@ async function start() {
     }
     const af = ev.target.closest('[data-af]')?.dataset.af;
     if (af && id) {
+      markRead(id);
       // Отзыв о статье — в чат (и в статистику)
       const link = `https://t.me/${BOT}?start=af_${id}_${af}`;
       if (tg) safe(() => tg.openTelegramLink(link), () => tg.close());

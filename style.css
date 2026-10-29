@@ -328,6 +328,8 @@ textarea { width: 100%; min-height: 110px; resize: vertical; margin-bottom: 12px
 .article-card { display: block; color: inherit !important; text-decoration: none; }
 .article-card h2 { margin-bottom: 6px; }
 .article-card p { color: var(--text-2); margin: 0 0 6px; }
+.article-card.read { opacity: 0.7; }
+.read-list { margin-top: 12px; }
 .article h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; margin: 8px 0 6px; }
 .article-body { margin-top: 18px; font-size: 17px; line-height: 1.6; }
 .article-body p, .article-body ul, .article-body blockquote { margin: 0 0 14px; }
