@@ -44,12 +44,12 @@ function avatar(author, cls = 'author-photo') {
 }
 
 function authorChip(id, author) {
-  return `<a class="author-chip" href="read.html?author=${encodeURIComponent(id)}">${avatar(author, 'author-photo small')}<span><b>${esc(author.name)}</b>${esc(author.role)}</span></a>`;
+  return `<a class="author-chip" href="read.html?author=${encodeURIComponent(id)}&${version}">${avatar(author, 'author-photo small')}<span><b>${esc(author.name)}</b>${esc(author.role)}</span></a>`;
 }
 
 function articleCard(a, lib) {
   return `
-    <a class="card article-card" href="read.html?a=${encodeURIComponent(a.id)}">
+    <a class="card article-card" href="read.html?a=${encodeURIComponent(a.id)}&${version}">
       <h2>${esc(a.title)}</h2>
       <p>${esc(a.lead)}</p>
       <p class="note">${esc(lib.authors[a.author].name)} · ${a.min} мин</p>

@@ -113,6 +113,9 @@ function toChat(action) {
 /** Аватары на выбор в «Настройках»: эмблема Эхо — по умолчанию */
 const AVATARS = [['emblem', 'Эхо'], ['flower', 'Цветок'], ['cat', 'Котик'], ['cat_coal', 'Уголёк'], ['cat_ginger', 'Рыжик']];
 
+/** Версия страниц (из ссылки на этот скрипт): с ней Telegram не откроет старую страницу из кэша */
+const VERSION = (document.currentScript?.src.split('v=')[1] || '').split('&')[0];
+
 /** Экстренная кнопка: на главном экране и первой карточкой в «Ещё» */
 const SOS_LABEL = '🤍 Помощь здесь и сейчас';
 
@@ -554,22 +557,22 @@ app.addEventListener('click', (ev) => {
   }
   if (ev.target.closest('[data-sos]')) {
     haptic('medium');
-    location.href = `sos.html?a=${state.addr}`;
+    location.href = `sos.html?a=${state.addr}&v=${VERSION}`;
     return;
   }
   if (ev.target.closest('[data-read]')) {
     haptic('light');
-    location.href = 'read.html';
+    location.href = `read.html?v=${VERSION}`;
     return;
   }
   if (ev.target.closest('[data-sounds]')) {
     haptic('light');
-    location.href = 'sounds.html';
+    location.href = `sounds.html?v=${VERSION}`;
     return;
   }
   if (practice) {
     haptic('light');
-    location.href = `practice.html?p=${practice}&a=${state.addr}&from=app`;
+    location.href = `practice.html?p=${practice}&a=${state.addr}&from=app&v=${VERSION}`;
     return;
   }
   if (['record', 'feedback', 'delete', 'tz', 'letter', 'theme', 'good', 'stats', 'name', 'metrics'].includes(action)) {
