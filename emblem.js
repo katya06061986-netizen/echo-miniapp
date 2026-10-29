@@ -20,3 +20,11 @@ window.echoEmblem = (cls = 'emblem') => `<span class="${cls}" aria-hidden="true"
 
 /** Эмблема внутри другой SVG-картинки (центр «Карты сил») */
 window.echoEmblemSvg = (x, y, size, cls = '') => `<svg class="${cls}" x="${x}" y="${y}" width="${size}" height="${size}" viewBox="0 0 264 264">${EMBLEM_INNER}</svg>`;
+
+/**
+ * Шкала дыхания: по делению на секунду, заполняются слева направо —
+ * видно, сколько ещё вдыхать или выдыхать, и воздух легко распределить равномерно.
+ */
+window.echoBreathBar = (sec, kind = 'in') => `<div class="breath-bar ${kind}" role="progressbar" aria-label="${sec} секунд">${
+  Array.from({ length: sec }, (_, i) => `<span><i style="animation-delay:${i}s"></i></span>`).join('')
+}</div>`;

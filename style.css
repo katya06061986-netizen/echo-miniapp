@@ -393,3 +393,11 @@ textarea { width: 100%; min-height: 110px; resize: vertical; margin-bottom: 12px
 .stat-action { text-align: left; color: var(--text); cursor: pointer; font: inherit; }
 .stat-action b { font-size: 20px; }
 .stat-action span { color: var(--text-2); }
+
+/* Шкала дыхания: деление — секунда, заполняется слева направо */
+.breath-bar { display: flex; gap: 6px; width: 100%; max-width: 280px; }
+.breath-bar span { flex: 1; height: 10px; border-radius: 5px; background: var(--surface-2); overflow: hidden; }
+.breath-bar i { display: block; height: 100%; width: 0; background: var(--accent); animation: bar-fill 1s linear forwards; }
+.breath-bar.out i { background: #A79DFF; }
+.breath-bar.hold i { background: var(--text-2); }
+@keyframes bar-fill { to { width: 100%; } }

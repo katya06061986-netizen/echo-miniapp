@@ -101,6 +101,7 @@ function run(round, phase) {
       <h1>${practice.title}</h1>
       <div class="orb ${kind}" style="--sec:${sec}s">${orbEmblem()}</div>
       <div class="phase">${label}</div>
+      ${practice.quiet ? '' : window.echoBreathBar(sec, kind)}
       <p class="note">${counter}</p>
     </section>`;
   const next = phase + 1 < practice.phases.length ? [round, phase + 1] : [round + 1, 0];

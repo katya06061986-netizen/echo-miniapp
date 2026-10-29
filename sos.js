@@ -64,6 +64,7 @@ function breathe(round = 0, phase = 0) {
     <p>Шаг за шагом. Сначала — выдох.</p>
     <div class="orb ${kind}" style="--sec:${sec}s">${orbEmblem()}</div>
     <div class="phase">${label}</div>
+    ${window.echoBreathBar(sec, kind)}
     ${rainChip()}
     <button class="btn subtle" id="next">Дальше</button>`);
   bindRain();
