@@ -58,10 +58,13 @@ function days() {
   return list.slice(-30);
 }
 
-/** Котик или цветок из бакета: avatars/<стиль>/<настроение>-<эмоция>.svg */
-function avatarSrc(mood, em) {
-  const file = mood === null ? 'empty.svg' : `${Math.min(10, Math.max(1, Math.round(mood)))}-${em ?? 'n'}.svg`;
-  return `avatars/${encodeURIComponent(state.st)}/${file}`;
+/** Стиль с картинками: прежние котик и Рыжик теперь показываются Угольком */
+const avatarStyle = (st) => (st === 'cat' || st === 'cat_ginger' ? 'cat_coal' : st);
+
+/** Котик, лотос или эмблема из бакета: avatars/<стиль>/<ступень 1–5>.jpg, настроение 1–10 по два балла */
+function avatarSrc(mood) {
+  const file = mood === null ? 'empty' : Math.ceil(Math.min(10, Math.max(1, Math.round(mood))) / 2);
+  return `avatars/${encodeURIComponent(avatarStyle(state.st))}/${file}.jpg?v=${VERSION}`;
 }
 
 /** Цвет настроения: от приглушённого синего через акцент к светлой лаванде */
@@ -111,7 +114,7 @@ function toChat(action) {
 }
 
 /** Аватары на выбор в «Настройках»: эмблема Эхо — по умолчанию */
-const AVATARS = [['emblem', 'Эхо'], ['flower', 'Цветок'], ['cat', 'Котик'], ['cat_coal', 'Уголёк'], ['cat_ginger', 'Рыжик']];
+const AVATARS = [['emblem', 'Эхо'], ['flower', 'Лотос'], ['cat_coal', 'Котик']];
 
 /** Версия страниц (из ссылки на этот скрипт): с ней Telegram не откроет старую страницу из кэша */
 const VERSION = (document.currentScript?.src.split('v=')[1] || '').split('&')[0];
@@ -141,7 +144,7 @@ function ring(value) {
       <svg viewBox="0 0 96 96"><circle class="track" cx="48" cy="48" r="${r}"/>
         <circle class="value" cx="48" cy="48" r="${r}" stroke-dasharray="${len}" stroke-dashoffset="${offset}"/></svg>
       ${state.st
-        ? `<img class="avatar" src="${avatarSrc(value ?? 6, value === null ? null : state.we)}" alt="">`
+        ? `<img class="avatar" src="${avatarSrc(value ?? 6)}" alt="">`
         : `<div class="ring-label"><div><b>${value === null ? '–' : fmt(value)}</b><small>из 10</small></div></div>`}
     </div>`;
 }
@@ -153,7 +156,7 @@ function weekAvatars() {
     const wd = WEEKDAYS[new Date(d.date + 'T00:00:00Z').getUTCDay()];
     return `<button class="wa${d.date === today ? ' today' : ''}" ${d.dd || d.gd || d.rf ? `data-day="${d.date}"` : d.date === today ? 'data-action="record"' : 'disabled'} title="${esc(dayTitle(d.date))}${d.mood === null ? '' : ': ' + fmt(d.mood)}">
       <b>${d.mood === null ? '' : fmt(d.mood)}${d.gd ? '<i class="good-mark">🌼</i>' : ''}</b>
-      <img src="${avatarSrc(d.mood, d.em)}" alt="">
+      <img src="${avatarSrc(d.mood)}" alt="">
       <span>${wd}</span>
     </button>`;
   }).join('')}</div>`;
@@ -473,7 +476,7 @@ function settings() {
       <h2>Аватар</h2>
       <p class="note" style="margin:0 0 12px">Он показывает настроение дня.</p>
       <div class="avatar-pick">
-        ${AVATARS.map(([id, label]) => `<button class="avatar-opt${state.st === id ? ' is-active' : ''}" data-style="${id}"><img src="avatars/${id}/8-0.svg" alt=""><span>${label}</span></button>`).join('')}
+        ${AVATARS.map(([id, label]) => `<button class="avatar-opt${avatarStyle(state.st) === id ? ' is-active' : ''}" data-style="${id}"><img src="avatars/${id}/4.jpg?v=${VERSION}" alt=""><span>${label}</span></button>`).join('')}
         <button class="avatar-opt" disabled><span class="soon">✨</span><span>Своё — скоро</span></button>
       </div>
     </section>
@@ -505,7 +508,7 @@ function openDay(date) {
   sheet.innerHTML = `
     <div class="day-sheet-card" role="dialog" aria-label="${esc(dayTitle(date))}">
       <div class="day-sheet-head">
-        ${state.st ? `<img src="${avatarSrc(d.mood, d.em)}" alt="">` : ''}
+        ${state.st ? `<img src="${avatarSrc(d.mood)}" alt="">` : ''}
         <div><h2>${esc(dayTitle(date))}</h2>${d.mood === null ? '' : `<p class="note" style="margin:0">Настроение ${fmt(d.mood)} из 10</p>`}</div>
       </div>
       ${d.dd?.e.length ? `<div class="chips">${d.dd.e.map((x) => `<span class="chip accent">${esc(x)}</span>`).join('')}</div>` : ''}

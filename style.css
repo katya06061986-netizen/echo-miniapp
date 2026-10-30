@@ -119,11 +119,11 @@ main {
 .ring .track, .ring .value { fill: none; stroke-width: 8; stroke-linecap: round; }
 .ring .track { stroke: var(--surface-2); }
 .ring .value { stroke: var(--accent); transition: stroke-dashoffset 0.8s ease; }
-.ring img.avatar { position: absolute; top: 12px; left: 12px; width: calc(100% - 24px); height: calc(100% - 24px); }
+.ring img.avatar { position: absolute; top: 12px; left: 12px; width: calc(100% - 24px); height: calc(100% - 24px); border-radius: 50%; object-fit: cover; }
 .week-avatars { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; align-items: end; margin-top: 8px; }
 .wa { display: flex; flex-direction: column; align-items: center; min-width: 0; }
 .wa b { font-size: 13px; font-weight: 600; color: var(--text-2); min-height: 16px; }
-.wa img { width: 100%; max-width: 64px; aspect-ratio: 1; }
+.wa img { width: 100%; max-width: 64px; aspect-ratio: 1; border-radius: 50%; object-fit: cover; }
 .wa span { font-size: 11px; color: var(--text-3); margin-top: 2px; }
 .wa.today span { color: var(--text); font-weight: 600; }
 .ring-label { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; }
@@ -369,7 +369,7 @@ textarea { width: 100%; min-height: 110px; resize: vertical; margin-bottom: 12px
   animation: sheet-up 0.22s ease-out;
 }
 .day-sheet-head { display: flex; align-items: center; gap: 12px; }
-.day-sheet-head img { width: 56px; height: 56px; }
+.day-sheet-head img { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; }
 .day-sheet-head h2 { margin: 0; }
 .day-quote { margin: 0; color: var(--text); }
 .day-quote span { display: block; font-size: 13px; color: var(--text-2); margin-bottom: 4px; }
@@ -388,7 +388,7 @@ textarea { width: 100%; min-height: 110px; resize: vertical; margin-bottom: 12px
   display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px; border-radius: var(--radius-sm);
   background: var(--surface-2); color: var(--text); font-size: 13px; border: 2px solid transparent;
 }
-.avatar-opt img { width: 56px; height: 56px; }
+.avatar-opt img { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; }
 .avatar-opt.is-active { border-color: var(--accent); background: var(--accent-soft); }
 .avatar-opt:disabled { opacity: 0.55; }
 .avatar-opt .soon { font-size: 34px; line-height: 56px; }
