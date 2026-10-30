@@ -243,7 +243,7 @@ textarea { width: 100%; min-height: 110px; resize: vertical; margin-bottom: 12px
 /* Нижние вкладки */
 .tabs {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
-  display: grid; grid-template-columns: repeat(5, 1fr);
+  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
   height: calc(var(--tabs-h) + var(--safe-b)); padding-bottom: var(--safe-b);
   background: var(--tabs-bg);
   backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);

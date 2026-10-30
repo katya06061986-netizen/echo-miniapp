@@ -12,7 +12,7 @@ const tabsEl = document.getElementById('tabs');
 const BOT = new URLSearchParams(location.search).get('b') || '';
 
 let state = null;
-let tab = ['overview', 'entries', 'recipe', 'feedback', 'more', 'settings'].includes(new URLSearchParams(location.search).get('tab')) ? new URLSearchParams(location.search).get('tab') : 'overview';
+let tab = ['overview', 'entries', 'recipe', 'more', 'settings'].includes(new URLSearchParams(location.search).get('tab')) ? new URLSearchParams(location.search).get('tab') : 'overview';
 let chartRange = 7;
 
 const WEEKDAYS = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
@@ -347,20 +347,20 @@ function recipe() {
   return `${head}<section class="card">${paragraphs.map((p) => `<p>${esc(p)}</p>`).join('')}</section>${powerMap()}`;
 }
 
-function feedback() {
+/** Отзыв — карточкой в «Настройках» */
+function feedbackCard() {
   const asks = [
     ['✨', 'Что добавить', 'Чего не хватает в дневнике'],
     ['🧹', 'Что убрать', 'Что мешает или кажется лишним'],
     ['🛠', 'Что улучшить', 'Где неудобно, непонятно или Эхо ошиблось'],
   ];
   return `
-    <header class="hello"><h1>Отзыв</h1><p>${f('Это тестовая версия, и ваше мнение очень помогает', 'Это тестовая версия, и твоё мнение очень помогает')}</p></header>
     <section class="card">
+      <h2>Отзыв</h2>
+      <p class="note" style="margin:0 0 12px">${f('Это тестовая версия, и ваше мнение очень помогает.', 'Это тестовая версия, и твоё мнение очень помогает.')}</p>
       ${asks.map(([icon, title, hint]) => `
         <div class="ask"><span class="icon">${icon}</span><div><b>${title}</b><p>${hint}</p></div></div>`).join('')}
-    </section>
-    <section class="card">
-      <p>Можно пару слов, можно подробно. Отзыв анонимный: команда прочитает только текст, без имени. В дневник он не попадёт.</p>
+      <p class="note" style="margin:12px 0 0">Можно пару слов, можно подробно. Отзыв анонимный: команда прочитает только текст, без имени. В дневник он не попадёт.</p>
       <button class="btn" data-action="feedback" style="margin-top:14px">✍️ Написать отзыв в чате</button>
     </section>`;
 }
@@ -396,12 +396,6 @@ function more() {
       <p class="note" style="margin:0 0 12px">Если накрыло тревогой или страхом — пара минут, чтобы переждать.</p>
       <button class="btn" data-sos>Открыть</button>
     </section>
-
-    ${state.ar ? `<section class="card">
-      <h2>📖 Почитать</h2>
-      <p class="note" style="margin:0 0 12px">Короткие статьи психологов о том, как бережно относиться к себе.</p>
-      <button class="btn" data-read>Открыть</button>
-    </section>` : ''}
 
     <section class="card">
       <h2>🎧 Звуки</h2>
@@ -489,6 +483,8 @@ function settings() {
       <button class="btn subtle" data-action="metrics">📊 Метрики</button>
     </section>` : ''}
 
+    ${feedbackCard()}
+
     <section class="card">
       <h2>Данные</h2>
       <p class="note" style="margin:0 0 14px">Аудио не хранится: после распознавания голосовое удаляется. Эхо — инструмент саморефлексии, а не медицинская помощь.</p>
@@ -559,7 +555,7 @@ function closeDay() {
 // ---------- отрисовка и события ----------
 
 function render() {
-  const views = { overview, recipe, feedback, more, settings };
+  const views = { overview, recipe, more, settings };
   app.innerHTML = `<div class="view">${views[tab]()}</div>`;
   for (const b of tabsEl.querySelectorAll('.tab')) b.classList.toggle('is-active', b.dataset.tab === tab);
 }
@@ -568,6 +564,11 @@ tabsEl.addEventListener('click', (ev) => {
   const btn = ev.target.closest('.tab');
   if (!btn || btn.dataset.tab === tab) return;
   haptic('light');
+  // «Статьи» — отдельная страница read.html, назад — кнопкой Telegram
+  if (btn.dataset.tab === 'read') {
+    location.href = `read.html?v=${VERSION}&b=${encodeURIComponent(BOT)}`;
+    return;
+  }
   tab = btn.dataset.tab;
   render();
   window.scrollTo(0, 0);
@@ -612,11 +613,6 @@ app.addEventListener('click', (ev) => {
   if (ev.target.closest('[data-sos]')) {
     haptic('medium');
     location.href = `sos.html?a=${state.addr}&v=${VERSION}`;
-    return;
-  }
-  if (ev.target.closest('[data-read]')) {
-    haptic('light');
-    location.href = `read.html?v=${VERSION}&b=${encodeURIComponent(BOT)}`;
     return;
   }
   if (ev.target.closest('[data-sounds]')) {
@@ -689,6 +685,7 @@ function start() {
     return;
   }
   tabsEl.hidden = false;
+  tabsEl.querySelector('[data-tab="read"]').hidden = !state.ar;
   render();
 }
 
