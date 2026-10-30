@@ -127,7 +127,7 @@ main {
 .wa span { font-size: 11px; color: var(--text-3); margin-top: 2px; }
 .wa.today span { color: var(--text); font-weight: 600; }
 .ring-label { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; }
-.ring-label b { font-size: 28px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+.ring-label b { font-size: 17px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
 .ring-label small { display: block; font-size: 11px; color: var(--text-3); margin-top: 2px; }
 .hero-text p { color: var(--text-2); }
 .hero-text .big { color: var(--text); font-size: 17px; font-weight: 600; margin-bottom: 6px; }

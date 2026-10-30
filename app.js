@@ -24,9 +24,12 @@ function esc(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 }
 
-function fmt(n) {
-  return (Math.round(n * 10) / 10).toString().replace('.', ',');
+/** Человеку — 5 ступеней словами, как у аватаров (внутри 1–10, по два балла на ступень) */
+const MOOD_WORDS = ['тяжело', 'непросто', 'ровно', 'светло', 'звонко'];
+function moodWord(n) {
+  return MOOD_WORDS[Math.ceil(Math.min(10, Math.max(1, Math.round(n))) / 2) - 1];
 }
+const cap = (s) => s[0].toUpperCase() + s.slice(1);
 
 /** «вы»-вариант или «ты»-вариант — как выбрал человек при знакомстве */
 function f(vy, ty) {
@@ -145,7 +148,7 @@ function ring(value) {
         <circle class="value" cx="48" cy="48" r="${r}" stroke-dasharray="${len}" stroke-dashoffset="${offset}"/></svg>
       ${state.st
         ? `<img class="avatar" src="${avatarSrc(value ?? 6)}" alt="">`
-        : `<div class="ring-label"><div><b>${value === null ? '–' : fmt(value)}</b><small>из 10</small></div></div>`}
+        : `<div class="ring-label"><div><b>${value === null ? '–' : cap(moodWord(value))}</b></div></div>`}
     </div>`;
 }
 
@@ -154,8 +157,8 @@ function weekAvatars() {
   const today = todayLocal();
   return `<div class="week-avatars">${days().slice(-7).map((d) => {
     const wd = WEEKDAYS[new Date(d.date + 'T00:00:00Z').getUTCDay()];
-    return `<button class="wa${d.date === today ? ' today' : ''}" ${d.dd || d.gd || d.rf ? `data-day="${d.date}"` : d.date === today ? 'data-action="record"' : 'disabled'} title="${esc(dayTitle(d.date))}${d.mood === null ? '' : ': ' + fmt(d.mood)}">
-      <b>${d.mood === null ? '' : fmt(d.mood)}${d.gd ? '<i class="good-mark">🌼</i>' : ''}</b>
+    return `<button class="wa${d.date === today ? ' today' : ''}" ${d.dd || d.gd || d.rf ? `data-day="${d.date}"` : d.date === today ? 'data-action="record"' : 'disabled'} title="${esc(dayTitle(d.date))}${d.mood === null ? '' : ': ' + moodWord(d.mood)}">
+      <b>${d.gd ? '<i class="good-mark">🌼</i>' : ''}</b>
       <img src="${avatarSrc(d.mood)}" alt="">
       <span>${wd}</span>
     </button>`;
@@ -181,7 +184,7 @@ function chart(range) {
     if (d.mood === null) {
       out += `<circle class="empty" cx="${cx}" cy="${top + plotH - 3}" r="3"/>`;
     } else {
-      out += `<rect class="bar" ${d.dd ? `data-day="${d.date}"` : ''} x="${cx - barW / 2}" y="${top + plotH - h}" width="${barW}" height="${h}" rx="${Math.min(8, barW / 2)}" fill="${moodColor(d.mood)}"><title>${esc(dayTitle(d.date))}: ${fmt(d.mood)}</title></rect>`;
+      out += `<rect class="bar" ${d.dd ? `data-day="${d.date}"` : ''} x="${cx - barW / 2}" y="${top + plotH - h}" width="${barW}" height="${h}" rx="${Math.min(8, barW / 2)}" fill="${moodColor(d.mood)}"><title>${esc(dayTitle(d.date))}: ${moodWord(d.mood)}</title></rect>`;
     }
     const date = new Date(d.date + 'T00:00:00Z');
     const isToday = d.date === today;
@@ -195,7 +198,7 @@ function overview() {
   const week = state.week;
   const last = state.ld;
   const heroText = week
-    ? `<p class="big">${esc(week.title)}</p><p>${week.trend ? esc(week.trend[0].toUpperCase() + week.trend.slice(1)) + '.' : 'Ещё пара дней — и станет видно, как идёт неделя.'}</p>${state.st && week.avg !== null ? `<p class="note">В среднем ${fmt(week.avg)} из 10</p>` : ''}`
+    ? `<p class="big">${esc(week.title)}</p><p>${week.trend ? esc(week.trend[0].toUpperCase() + week.trend.slice(1)) + '.' : 'Ещё пара дней — и станет видно, как идёт неделя.'}</p>${state.st && week.avg !== null ? `<p class="note">В среднем — ${moodWord(week.avg)}</p>` : ''}`
     : `<p class="big">Неделя только начинается</p><p>${f('Расскажите голосом, как прошёл день, — и здесь появится ваше настроение.', 'Расскажи голосом, как прошёл день, — и здесь появится твоё настроение.')}</p>`;
 
   return `
@@ -509,7 +512,7 @@ function openDay(date) {
     <div class="day-sheet-card" role="dialog" aria-label="${esc(dayTitle(date))}">
       <div class="day-sheet-head">
         ${state.st ? `<img src="${avatarSrc(d.mood)}" alt="">` : ''}
-        <div><h2>${esc(dayTitle(date))}</h2>${d.mood === null ? '' : `<p class="note" style="margin:0">Настроение ${fmt(d.mood)} из 10</p>`}</div>
+        <div><h2>${esc(dayTitle(date))}</h2>${d.mood === null ? '' : `<p class="note" style="margin:0">${cap(moodWord(d.mood))}</p>`}</div>
       </div>
       ${d.dd?.e.length ? `<div class="chips">${d.dd.e.map((x) => `<span class="chip accent">${esc(x)}</span>`).join('')}</div>` : ''}
       ${d.dd?.q?.length ? `<div class="day-quote"><span>Прозвучало:</span>${d.dd.q.map((q) => `<p>«${esc(q)}»</p>`).join('')}</div>` : ''}
