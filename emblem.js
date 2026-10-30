@@ -28,3 +28,19 @@ window.echoEmblemSvg = (x, y, size, cls = '') => `<svg class="${cls}" x="${x}" y
 window.echoBreathBar = (sec, kind = 'in') => `<div class="breath-bar ${kind}" role="progressbar" aria-label="${sec} секунд">${
   Array.from({ length: sec }, (_, i) => `<span><i style="animation-delay:${i}s"></i></span>`).join('')
 }</div>`;
+
+/**
+ * Вибрация в такт дыханию (Telegram HapticFeedback): на вдохе — лёгкий толчок каждую секунду,
+ * на выдохе — мягкий в начале и в середине, на задержке — тишина. Новая фаза отменяет толчки прошлой.
+ */
+let breathPulses = [];
+window.echoBreathHaptic = (sec, kind = 'in') => {
+  breathPulses.forEach(clearTimeout);
+  breathPulses = [];
+  const hf = window.Telegram?.WebApp?.HapticFeedback;
+  if (!hf || kind === 'hold') return;
+  const pulse = (style) => { try { hf.impactOccurred(style); } catch { /* не поддерживается */ } };
+  const times = kind === 'in' ? Array.from({ length: sec }, (_, i) => i) : [0, Math.floor(sec / 2)];
+  breathPulses = times.map((t) => setTimeout(() => pulse(kind === 'in' ? 'light' : 'soft'), t * 1000));
+};
+window.echoBreathHapticStop = () => { breathPulses.forEach(clearTimeout); breathPulses = []; };

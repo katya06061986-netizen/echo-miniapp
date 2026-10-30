@@ -371,6 +371,14 @@ function more() {
       </div>
     </section>
 
+    ${state.co !== null && state.co !== undefined ? `<section class="card">
+      <h2>🌿 Мягче к себе</h2>
+      <p class="note" style="margin:0 0 12px">${state.co < 0
+        ? 'Курс на 7 дней про внутреннего критика: утром короткий текст, вечером вопрос.'
+        : state.co === 0 ? 'Курс начнётся завтра.' : `Идёт курс: день ${Math.min(state.co, 7)} из 7.`}</p>
+      <button class="btn${state.co < 0 ? '' : ' subtle'}" data-action="course_soft">${state.co < 0 ? 'Подробнее' : 'Как идёт курс'}</button>
+    </section>` : ''}
+
     <section class="card">
       <h2>✉️ Письмо себе</h2>
       <p class="note" style="margin:0 0 12px">Через месяц оно вернётся к ${f('вам', 'тебе')} эхом.</p>
@@ -615,7 +623,7 @@ app.addEventListener('click', (ev) => {
     location.href = `practice.html?p=${practice}&a=${state.addr}&from=app&b=${encodeURIComponent(BOT)}&v=${VERSION}`;
     return;
   }
-  if (['record', 'feedback', 'delete', 'tz', 'letter', 'theme', 'good', 'stats', 'name', 'metrics'].includes(action)) {
+  if (['record', 'feedback', 'delete', 'tz', 'letter', 'theme', 'course_soft', 'good', 'stats', 'name', 'metrics'].includes(action)) {
     toChat(action);
   }
 });

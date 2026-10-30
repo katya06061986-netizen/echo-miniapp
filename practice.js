@@ -87,6 +87,7 @@ function applyTheme() {
 
 function intro() {
   clearTimeout(timer);
+  window.echoBreathHapticStop();
   app.innerHTML = `
     <section class="practice-card">
       <h1>${practice.title}</h1>
@@ -114,6 +115,8 @@ function run(round, phase) {
       ${practice.quiet ? '' : window.echoBreathBar(sec, kind)}
       <p class="note">${counter}</p>
     </section>`;
+  // Тихая пауза — без вибрации, остальное дышит и в руке
+  if (!practice.quiet) window.echoBreathHaptic(sec, kind);
   const next = phase + 1 < practice.phases.length ? [round, phase + 1] : [round + 1, 0];
   timer = setTimeout(() => run(...next), sec * 1000);
 }
@@ -133,6 +136,7 @@ function step(i) {
 }
 
 function done() {
+  window.echoBreathHapticStop();
   safe(() => tg.HapticFeedback.notificationOccurred('success'));
   window.EchoSound?.stop(4);
   // Отклик: помогла ли практика — ответ уходит в чат (и в статистику), «Эхо» закрывается

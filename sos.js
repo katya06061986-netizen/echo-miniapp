@@ -35,6 +35,7 @@ function applyTheme() {
 
 function screen(html) {
   clearTimeout(timer);
+  window.echoBreathHapticStop();
   app.innerHTML = `<section class="practice-card">${html}</section>`;
 }
 
@@ -68,6 +69,7 @@ function breathe(round = 0, phase = 0) {
     ${rainChip()}
     <button class="btn subtle" id="next">Дальше</button>`);
   bindRain();
+  window.echoBreathHaptic(sec, kind);
   document.getElementById('next').onclick = ground;
   const next = phase + 1 < PHASES.length ? [round, phase + 1] : [round + 1, 0];
   timer = setTimeout(() => breathe(...next), sec * 1000);
