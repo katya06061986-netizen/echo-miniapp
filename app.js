@@ -15,6 +15,25 @@ let state = null;
 let tab = ['overview', 'entries', 'recipe', 'more', 'settings'].includes(new URLSearchParams(location.search).get('tab')) ? new URLSearchParams(location.search).get('tab') : 'overview';
 let chartRange = 7;
 
+/*
+ * Telegram на телефоне может держать старую ссылку кнопки «Эхо» (со старым ?v=) и открывать
+ * прошлую версию страницы. Сверяемся с сайтом мимо кэша и, если версия новее, переходим на неё.
+ * Один раз за сессию — чтобы не зациклиться, если CDN ещё не обновился.
+ */
+(async () => {
+  const mine = document.querySelector('script[src^="app.js"]')?.getAttribute('src').match(/v=(\w+)/)?.[1];
+  if (!mine) return;
+  try {
+    const html = await (await fetch(`index.html?check=${Date.now()}`, { cache: 'no-store' })).text();
+    const fresh = html.match(/app\.js\?v=(\w+)/)?.[1];
+    if (!fresh || fresh === mine || sessionStorage.getItem('echoReloadedTo') === fresh) return;
+    sessionStorage.setItem('echoReloadedTo', fresh);
+    const url = new URL(location.href);
+    url.searchParams.set('v', fresh);
+    location.replace(url.href);
+  } catch {}
+})();
+
 const WEEKDAYS = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
 const MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
 
