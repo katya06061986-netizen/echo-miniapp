@@ -387,17 +387,27 @@ function feedbackCard() {
 /** Подраздел «Ещё»: null — сам раздел, 'courses' — список курсов (решение 31.10.2026, как в приложении) */
 let moreSub = null;
 
+/** Курсы — те же, что в bot/src/courses.ts */
+const COURSE_LIST = [
+  { id: 'soft', emoji: '🌿', title: 'Мягче к себе', about: 'Курс на 7 дней про внутреннего критика: утром короткий текст, вечером вопрос.' },
+  { id: 'calm', emoji: '🌊', title: 'Когда тревожно', about: 'Курс на 7 дней про тревогу в обычной жизни: утром короткий текст, вечером вопрос.', draft: true },
+];
+
 function courses() {
+  // Курс в одно время — один: пока идёт другой, остальные можно только посмотреть
+  // draft — курс на проверке у владельца (COURSE_DRAFTS в courses.ts): видят только админы
+  const cards = COURSE_LIST.filter((c) => !c.draft || state.adm || state.cid === c.id).map((c) => {
+    const running = state.cid === c.id;
+    const text = running ? (state.co === 0 ? 'Курс начнётся завтра.' : `Идёт курс: день ${Math.min(state.co, 7)} из 7.`) : c.about;
+    return `<section class="card">
+      <h2>${c.emoji} ${c.title}</h2>
+      <p class="note" style="margin:0 0 12px">${text}</p>
+      <button class="btn${state.cid ? ' subtle' : ''}" data-action="course_${c.id}">${running ? 'Как идёт курс' : 'Подробнее'}</button>
+    </section>`;
+  }).join('');
   return `
     <header class="hello sub-head"><button class="back-btn" data-more-back aria-label="Назад">‹</button><h1>Курсы</h1></header>
-
-    <section class="card">
-      <h2>🌿 Мягче к себе</h2>
-      <p class="note" style="margin:0 0 12px">${state.co < 0
-        ? 'Курс на 7 дней про внутреннего критика: утром короткий текст, вечером вопрос.'
-        : state.co === 0 ? 'Курс начнётся завтра.' : `Идёт курс: день ${Math.min(state.co, 7)} из 7.`}</p>
-      <button class="btn${state.co < 0 ? '' : ' subtle'}" data-action="course_soft">${state.co < 0 ? 'Подробнее' : 'Как идёт курс'}</button>
-    </section>
+    ${cards}
     <p class="note" style="text-align:center">Новые курсы будут появляться здесь же.</p>`;
 }
 
@@ -669,7 +679,7 @@ app.addEventListener('click', (ev) => {
     location.href = `practice.html?p=${practice}&a=${state.addr}&from=app&b=${encodeURIComponent(BOT)}&v=${VERSION}`;
     return;
   }
-  if (['record', 'feedback', 'delete', 'tz', 'letter', 'theme', 'course_soft', 'good', 'stats', 'name', 'metrics', 'app'].includes(action)) {
+  if (['record', 'feedback', 'delete', 'tz', 'letter', 'theme', 'course_soft', 'course_calm', 'good', 'stats', 'name', 'metrics', 'app'].includes(action)) {
     toChat(action);
   }
 });
