@@ -153,6 +153,14 @@ const PRACTICES = [
   ['kind', '🫶', 'Бережная пауза'],
 ];
 
+/** Расширенные практики «Эхо+» (31.10.2026) */
+const PLUS_PRACTICES = [
+  ['box', '💠', 'Квадратное дыхание'],
+  ['bodyscan', '🫧', 'Прогулка по телу'],
+  ['sleep', '🌙', 'Перед сном'],
+  ['safe', '🏡', 'Спокойное место'],
+];
+
 // ---------- экраны ----------
 
 /** Эмблема Эхо — из emblem.js; «дышит» */
@@ -424,8 +432,16 @@ function more() {
       </div>
     </section>
 
+    <section class="card">
+      <h2>✨ Ещё практики</h2>
+      <p class="note" style="margin:0 0 12px">Подольше и поглубже. В Эхо+.</p>
+      <div class="practices">
+        ${PLUS_PRACTICES.map(([id, emoji, title]) => `<button class="practice-btn" data-practice="${id}"><span>${emoji}</span>${title}</button>`).join('')}
+      </div>
+    </section>
+
     ${state.co !== null && state.co !== undefined ? `<button class="card link-card" data-more="courses">
-      <div><h2>📚 Курсы</h2><p class="note" style="margin:0">${state.co > 0 ? `Идёт «Мягче к себе»: день ${Math.min(state.co, 7)} из 7.` : 'Несколько дней, по шагу в день.'}</p></div>
+      <div><h2>📚 Курсы</h2><p class="note" style="margin:0">${state.co > 0 ? `Идёт «${(COURSE_LIST.find((c) => c.id === state.cid) ?? COURSE_LIST[0]).title}»: день ${Math.min(state.co, 7)} из 7.` : 'Несколько дней, по шагу в день.'}</p></div>
       <span class="chev">›</span>
     </button>` : ''}
 
