@@ -384,7 +384,25 @@ function feedbackCard() {
     </section>`;
 }
 
+/** Подраздел «Ещё»: null — сам раздел, 'courses' — список курсов (решение 31.10.2026, как в приложении) */
+let moreSub = null;
+
+function courses() {
+  return `
+    <header class="hello sub-head"><button class="back-btn" data-more-back aria-label="Назад">‹</button><h1>Курсы</h1></header>
+
+    <section class="card">
+      <h2>🌿 Мягче к себе</h2>
+      <p class="note" style="margin:0 0 12px">${state.co < 0
+        ? 'Курс на 7 дней про внутреннего критика: утром короткий текст, вечером вопрос.'
+        : state.co === 0 ? 'Курс начнётся завтра.' : `Идёт курс: день ${Math.min(state.co, 7)} из 7.`}</p>
+      <button class="btn${state.co < 0 ? '' : ' subtle'}" data-action="course_soft">${state.co < 0 ? 'Подробнее' : 'Как идёт курс'}</button>
+    </section>
+    <p class="note" style="text-align:center">Новые курсы будут появляться здесь же.</p>`;
+}
+
 function more() {
+  if (moreSub === 'courses') return courses();
   return `
     <header class="hello"><h1>Ещё</h1></header>
 
@@ -396,24 +414,15 @@ function more() {
       </div>
     </section>
 
-    ${state.co !== null && state.co !== undefined ? `<section class="card">
-      <h2>🌿 Мягче к себе</h2>
-      <p class="note" style="margin:0 0 12px">${state.co < 0
-        ? 'Курс на 7 дней про внутреннего критика: утром короткий текст, вечером вопрос.'
-        : state.co === 0 ? 'Курс начнётся завтра.' : `Идёт курс: день ${Math.min(state.co, 7)} из 7.`}</p>
-      <button class="btn${state.co < 0 ? '' : ' subtle'}" data-action="course_soft">${state.co < 0 ? 'Подробнее' : 'Как идёт курс'}</button>
-    </section>` : ''}
+    ${state.co !== null && state.co !== undefined ? `<button class="card link-card" data-more="courses">
+      <div><h2>📚 Курсы</h2><p class="note" style="margin:0">${state.co > 0 ? `Идёт «Мягче к себе»: день ${Math.min(state.co, 7)} из 7.` : 'Несколько дней, по шагу в день.'}</p></div>
+      <span class="chev">›</span>
+    </button>` : ''}
 
     <section class="card">
       <h2>✉️ Письмо себе</h2>
       <p class="note" style="margin:0 0 12px">Через месяц оно вернётся к ${f('вам', 'тебе')} эхом.</p>
       <button class="btn" data-action="letter">Написать</button>
-    </section>
-
-    <section class="card">
-      <h2>${SOS_LABEL}</h2>
-      <p class="note" style="margin:0 0 12px">Если накрыло тревогой или страхом — пара минут, чтобы переждать.</p>
-      <button class="btn" data-sos>Открыть</button>
     </section>
 
     <section class="card">
@@ -589,6 +598,7 @@ tabsEl.addEventListener('click', (ev) => {
     return;
   }
   tab = btn.dataset.tab;
+  moreSub = null;
   render();
   window.scrollTo(0, 0);
 });
@@ -607,6 +617,15 @@ app.addEventListener('click', (ev) => {
     haptic('light');
     // только подпись под картой — без перерисовки, чтобы волны не начинались заново
     document.getElementById('pm-quote').innerHTML = pmQuote(pmSel);
+    return;
+  }
+  // Подменю «Ещё» → «Курсы» и обратно
+  const sub = ev.target.closest('[data-more]')?.dataset.more;
+  if (sub || ev.target.closest('[data-more-back]')) {
+    haptic('light');
+    moreSub = sub ?? null;
+    render();
+    window.scrollTo(0, 0);
     return;
   }
   const day = ev.target.closest('[data-day]')?.dataset.day;

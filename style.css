@@ -419,3 +419,11 @@ textarea { width: 100%; min-height: 110px; resize: vertical; margin-bottom: 12px
 .good-mark { font-style: normal; font-size: 11px; margin-left: 2px; cursor: pointer; }
 .chart .good-mark { font-size: 12px; }
 .day-good p { font-style: normal; }
+
+/* «Ещё» → «Курсы»: карточка-переход и заголовок подраздела со стрелкой назад */
+.link-card { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; color: inherit; font: inherit; cursor: pointer; }
+.link-card > div { flex: 1; }
+.link-card h2 { margin: 0 0 4px; }
+.link-card .chev { font-size: 28px; color: var(--text-2); }
+.sub-head { display: flex; align-items: center; gap: 10px; }
+.back-btn { font-size: 30px; line-height: 1; color: var(--text-2); background: none; border: 0; padding: 0 4px; cursor: pointer; }
