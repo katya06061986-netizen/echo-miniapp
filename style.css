@@ -427,3 +427,8 @@ textarea { width: 100%; min-height: 110px; resize: vertical; margin-bottom: 12px
 .link-card .chev { font-size: 28px; color: var(--text-2); }
 .sub-head { display: flex; align-items: center; gap: 10px; }
 .back-btn { font-size: 30px; line-height: 1; color: var(--text-2); background: none; border: 0; padding: 0 4px; cursor: pointer; }
+
+/* «Почитать»: вкладки «Психологи» и «Редакция Эхо» */
+.read-tabs { display: flex; margin: 0 4px 12px; }
+.read-tabs a { flex: 1; text-align: center; padding: 7px 10px; border-radius: 8px; font-size: 14px; color: var(--text-2); text-decoration: none; }
+.read-tabs a.is-active { background: var(--accent-soft, rgba(150, 138, 255, 0.22)); color: var(--text); font-weight: 600; }

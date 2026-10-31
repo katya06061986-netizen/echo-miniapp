@@ -64,36 +64,53 @@ function markRead(id) {
   try { localStorage.setItem(READ_KEY, JSON.stringify([...ids])); } catch { /* хранилище недоступно */ }
 }
 
+/** Статья только из платных дней курса — «Эхо+»; закрыта, лишь когда закончится тест (plusLocked) */
+const locked = (a, lib) => Boolean(lib.plusLocked && a.plus);
+
 function articleCard(a, lib, read = false) {
   return `
     <a class="card article-card${read ? ' read' : ''}" href="read.html?a=${encodeURIComponent(a.id)}${keep()}">
       <h2>${esc(a.title)}</h2>
       <p>${esc(a.lead)}</p>
-      <p class="note">${esc(lib.authors[a.author].name)} · ${a.min} мин${read ? ' · ✓ прочитано' : ''}</p>
+      <p class="note">${esc(lib.authors[a.author].name)} · ${a.min} мин${locked(a, lib) ? ' · ✨ Эхо+' : ''}${read ? ' · ✓ прочитано' : ''}</p>
     </a>`;
 }
 
+/** Две вкладки «Почитать» (31.10.2026): психологи — первыми, «Редакция Эхо» — рядом */
+const EDITORIAL = 'echo';
+const TABS = [['psy', 'Психологи'], ['echo', 'Редакция Эхо']];
+const tabOf = (a) => (a.author === EDITORIAL ? 'echo' : 'psy');
+
+function tabsBar(current) {
+  return `<div class="seg read-tabs" role="tablist">${TABS.map(([id, label]) => `<a role="tab" class="${current === id ? 'is-active' : ''}" href="read.html?t=${id}${keep()}">${label}</a>`).join('')}</div>`;
+}
+
 /** Разделы для быстрого поиска по темам — когда их хотя бы два */
-function sections(lib, current) {
-  const names = [...new Set(lib.articles.map((a) => a.section))];
+function sections(articles, current, tab) {
+  const names = [...new Set(articles.map((a) => a.section))];
   if (names.length < 2) return '';
-  const chip = (name, label) => `<a class="chip${current === name ? ' accent' : ''}" href="read.html?${name ? `s=${encodeURIComponent(name)}` : ''}${keep()}">${esc(label)}</a>`;
+  const chip = (name, label) => `<a class="chip${current === name ? ' accent' : ''}" href="read.html?t=${tab}${name ? `&s=${encodeURIComponent(name)}` : ''}${keep()}">${esc(label)}</a>`;
   return `<div class="chips read-sections">${chip('', 'Все')}${names.map((n) => chip(n, n)).join('')}</div>`;
 }
 
 function list(lib) {
+  const tab = params.get('t') === 'echo' ? 'echo' : 'psy';
   const current = params.get('s') || '';
-  const shown = current ? lib.articles.filter((a) => a.section === current) : lib.articles;
+  const inTab = lib.articles.filter((a) => tabOf(a) === tab);
+  const shown = current ? inTab.filter((a) => a.section === current) : inTab;
   // Прочитанные прячутся вниз, под кнопку — их всегда можно найти
   const done = readIds();
   const fresh = shown.filter((a) => !done.has(a.id));
   const read = shown.filter((a) => done.has(a.id));
   const empty = shown.length
     ? '<section class="card"><p>Всё прочитано 🌿 Новые статьи скоро появятся.</p></section>'
-    : '<section class="card"><p>Скоро здесь появятся первые статьи.</p></section>';
+    : tab === 'psy'
+      ? '<section class="card"><p>Скоро здесь появятся статьи психологов. А пока можно почитать «Редакцию Эхо».</p></section>'
+      : '<section class="card"><p>Скоро здесь появятся первые статьи.</p></section>';
   return `
     <header class="hello"><h1>Почитать</h1><p>Короткие статьи о том, как бережно относиться к себе</p></header>
-    ${sections(lib, current)}
+    ${tabsBar(tab)}
+    ${sections(inTab, current, tab)}
     ${fresh.length ? fresh.map((a) => articleCard(a, lib)).join('') : empty}
     ${read.length ? `<button class="btn subtle" data-read-toggle>📚 Прочитанные (${read.length})</button>
     <div class="read-list" hidden>${read.map((a) => articleCard(a, lib, true)).join('')}</div>` : ''}
@@ -103,6 +120,15 @@ function list(lib) {
 function article(lib, id) {
   const a = lib.articles.find((x) => x.id === id);
   if (!a) return list(lib);
+  // TODO: integrate признак подписки в ссылке на «Почитать», когда появится оплата Эхо+
+  if (locked(a, lib)) {
+    return `
+    <article class="article">
+      <h1>${esc(a.title)}</h1>
+      <p>${esc(a.lead)}</p>
+      <section class="card"><p>✨ Эта статья — часть курса «Мягче к себе» и входит в «Эхо+».</p></section>
+    </article>`;
+  }
   return `
     <article class="article">
       <h1>${esc(a.title)}</h1>
