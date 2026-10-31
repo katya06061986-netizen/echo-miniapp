@@ -29,7 +29,7 @@ function applyTheme() {
   const forced = params.get('theme');
   const light = forced ? forced === 'light' : tg?.colorScheme ? tg.colorScheme === 'light' : matchMedia('(prefers-color-scheme: light)').matches;
   document.documentElement.classList.toggle('light', light);
-  const bg = light ? '#E6DFF7' : '#221E35';
+  const bg = light ? '#D2C8EA' : '#221E35';
   safe(() => tg.setHeaderColor(bg), () => tg.setBackgroundColor(bg), () => tg.setBottomBarColor(bg));
 }
 

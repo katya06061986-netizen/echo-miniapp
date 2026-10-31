@@ -24,10 +24,11 @@
 /* Светлая тема — когда светлая тема в Telegram (класс ставит app.js) */
 :root.light {
   color-scheme: light;
-  --bg: #E6DFF7;
-  --surface: #F3EFFB;
-  --surface-2: #E0D8F3;
-  --border: #D3C9EE;
+  /* Фон чуть темнее — вариант 3 (31.10.2026), как светлая тема приложения */
+  --bg: #D2C8EA;
+  --surface: #EBE5F8;
+  --surface-2: #DFD7F2;
+  --border: #C3B8E2;
   --text: #241F3A;
   --text-2: #554E73;
   --text-3: #857EA2;
