@@ -426,6 +426,12 @@ function more() {
     </section>
 
     <section class="card">
+      <h2>📲 Приложение для Android</h2>
+      <p class="note" style="margin:0 0 12px">${f('Если у вас нет RuStore, приложение можно скачать прямо здесь. Записи в нём хранятся только на телефоне.', 'Если у тебя нет RuStore, приложение можно скачать прямо здесь. Записи в нём хранятся только на телефоне.')}</p>
+      <button class="btn" data-action="app">Скачать</button>
+    </section>
+
+    <section class="card">
       <h2>🎧 Звуки</h2>
       <p class="note" style="margin:0 0 12px">Тихий фон, чтобы побыть с собой: дождь, море, лес или музыка.</p>
       <button class="btn" data-sounds>Послушать</button>
@@ -663,7 +669,7 @@ app.addEventListener('click', (ev) => {
     location.href = `practice.html?p=${practice}&a=${state.addr}&from=app&b=${encodeURIComponent(BOT)}&v=${VERSION}`;
     return;
   }
-  if (['record', 'feedback', 'delete', 'tz', 'letter', 'theme', 'course_soft', 'good', 'stats', 'name', 'metrics'].includes(action)) {
+  if (['record', 'feedback', 'delete', 'tz', 'letter', 'theme', 'course_soft', 'good', 'stats', 'name', 'metrics', 'app'].includes(action)) {
     toChat(action);
   }
 });
