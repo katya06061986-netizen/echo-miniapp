@@ -437,7 +437,7 @@ function more() {
 
     <section class="card">
       <h2>✨ Ещё практики</h2>
-      <p class="note" style="margin:0 0 12px">Подольше и поглубже. В Эхо+.</p>
+      <p class="note" style="margin:0 0 12px">Практики на 3–5 минут, когда есть время побыть с собой. В Эхо+.</p>
       <div class="practices">
         ${PLUS_PRACTICES.map(([id, emoji, title]) => `<button class="practice-btn" data-practice="${id}"><span>${emoji}</span>${title}</button>`).join('')}
       </div>
