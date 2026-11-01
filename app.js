@@ -378,6 +378,16 @@ function recipe() {
 }
 
 /** Отзыв — карточкой в «Настройках» */
+/** Приложение для Android без RuStore — в «Настройках» (из «Ещё» перенесено 01.11.2026) */
+function appCard() {
+  return `
+    <section class="card">
+      <h2>📲 Приложение для Android</h2>
+      <p class="note" style="margin:0 0 12px">${f('Если у вас нет RuStore, приложение можно скачать прямо здесь. Записи в нём хранятся только на телефоне.', 'Если у тебя нет RuStore, приложение можно скачать прямо здесь. Записи в нём хранятся только на телефоне.')}</p>
+      <button class="btn" data-action="app">Скачать</button>
+    </section>`;
+}
+
 function feedbackCard() {
   const asks = [
     ['✨', 'Что добавить', 'Чего не хватает в дневнике'],
@@ -452,12 +462,6 @@ function more() {
       <h2>✉️ Письмо себе</h2>
       <p class="note" style="margin:0 0 12px">Через месяц оно вернётся к ${f('вам', 'тебе')} эхом.</p>
       <button class="btn" data-action="letter">Написать</button>
-    </section>
-
-    <section class="card">
-      <h2>📲 Приложение для Android</h2>
-      <p class="note" style="margin:0 0 12px">${f('Если у вас нет RuStore, приложение можно скачать прямо здесь. Записи в нём хранятся только на телефоне.', 'Если у тебя нет RuStore, приложение можно скачать прямо здесь. Записи в нём хранятся только на телефоне.')}</p>
-      <button class="btn" data-action="app">Скачать</button>
     </section>
 
     <section class="card">
@@ -545,6 +549,8 @@ function settings() {
       <h2>Для команды</h2>
       <button class="btn subtle" data-action="metrics">📊 Метрики</button>
     </section>` : ''}
+
+    ${appCard()}
 
     ${feedbackCard()}
 
