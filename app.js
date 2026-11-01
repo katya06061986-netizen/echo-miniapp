@@ -453,6 +453,16 @@ function more() {
       </div>
     </section>
 
+    <section class="card">
+      <h2>📒 Мои записки</h2>
+      <p class="note" style="margin:0 0 12px">${f('Тревоги на потом, две колонки, опоры, выгруженные мысли. Записывается прямо в чате — блокнот не нужен.', 'Тревоги на потом, две колонки, опоры, выгруженные мысли. Записывается прямо в чате — блокнот не нужен.')}</p>
+      <div class="practices">
+        <button class="practice-btn" data-action="notes_worry"><span>🗂</span>Тревога на потом</button>
+        <button class="practice-btn" data-action="notes_thought"><span>📝</span>Выгрузить мысли</button>
+      </div>
+      <button class="btn subtle" data-action="notes">Все записки</button>
+    </section>
+
     ${state.co !== null && state.co !== undefined ? `<button class="card link-card" data-more="courses">
       <div><h2>📚 Курсы</h2><p class="note" style="margin:0">${state.co > 0 ? `Идёт «${(COURSE_LIST.find((c) => c.id === state.cid) ?? COURSE_LIST[0]).title}»: день ${Math.min(state.co, 7)} из 7.` : 'Несколько дней, по шагу в день.'}</p></div>
       <span class="chev">›</span>
@@ -704,7 +714,7 @@ app.addEventListener('click', (ev) => {
     location.href = `practice.html?p=${practice}&a=${state.addr}&from=app&b=${encodeURIComponent(BOT)}&v=${VERSION}`;
     return;
   }
-  if (['record', 'feedback', 'delete', 'tz', 'letter', 'theme', 'course_soft', 'course_calm', 'good', 'stats', 'name', 'metrics', 'app'].includes(action)) {
+  if (['record', 'feedback', 'delete', 'tz', 'letter', 'theme', 'course_soft', 'course_calm', 'notes', 'notes_worry', 'notes_thought', 'good', 'stats', 'name', 'metrics', 'app'].includes(action)) {
     toChat(action);
   }
 });
