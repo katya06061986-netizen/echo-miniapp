@@ -136,7 +136,7 @@ function toChat(action) {
 }
 
 /** Аватары на выбор в «Настройках»: эмблема Эхо — по умолчанию */
-const AVATARS = [['emblem', 'Эхо'], ['flower', 'Лотос'], ['cat_coal', 'Котик']];
+const AVATARS = [['emblem', 'Эхо'], ['flower', 'Лотос'], ['cat_coal', 'Котик'], ['weather', 'Погода']];
 
 /** Версия страниц (из ссылки на этот скрипт): с ней Telegram не откроет старую страницу из кэша */
 const VERSION = (document.currentScript?.src.split('v=')[1] || '').split('&')[0];
